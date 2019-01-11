@@ -163,21 +163,22 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
      // sound card delayed out_feeback
      // if latency based low-freq noise occures compensate in csound with hpf
      vnew[0] = in[i];
-
      update_vp_pointers(M, dt, dx, c, (mult_rho * rho), iter_S, iter_pold, iter_vold,
                                                    iter_pnew, iter_vnew);
-     // Boundary condition at tubeend has radiation losses, damps traveling wave
+     // Boundary condition at tube end has radiation losses, damps traveling wave
      pnew[M]  = (pold[M]*rad_betaS/(mult_rho * rho) + vnew[M]-vold[M]) /
                 (rad_betaS/(mult_rho * rho) + rad_alphaS/(mult_rho * rho)*dt);
 
      i = i+1;
+     
       // Copying p(n+1) to p(n) and v(n+1) to v(n),
       // i.e. new becomes old grid for next call
       std::copy(pnew.begin(), pnew.end(), pold.begin());
       std::copy(vnew.begin(), vnew.end(), vold.begin());
 
-      // TODO: make readout pos flexible??
-      o_sound = pnew[M];  // Output the damped ending of the tube to csound
+      // sound is obtained at given position
+      int pickup_idx = ceil(pickup_pos * L/dx);
+      o_sound = pnew[pickup_idx];  // Output the damped ending of the tube to csound
     }
 
     Lold      = L;
