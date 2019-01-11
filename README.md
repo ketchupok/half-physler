@@ -9,10 +9,10 @@ In this repository you find the C++ code to compile the tube model as an opcode 
 
 
 ## Install
- git clone xyz
+ git clone https://github.com/ketchupok/half-physler.git
 
  ```
- cd physler
+ cd half-physler
 
  make
 ```
@@ -21,20 +21,21 @@ In this repository you find the C++ code to compile the tube model as an opcode 
 ### Mac
 
 ```
-csound demo_halfphysler.csd
+csound Demo_PC_Mac/demo_halfphysler.csd
 ```
 
 ### Linux / Ubuntu
 
 ```
-csound demo_halfphysler.csd
+csound Demo_PC_Mac/demo_halfphysler.csd
 ```
 
 
 ## Bela
 
 ```
-belacsound --csd=halfphysler_bela.csd --period=32
+make installBela
+belacsound --csd=/Bela/projects/Bela_HalfPhysler_DemoProject/_main.csd --period=32
 ```
 
 ### Windows
