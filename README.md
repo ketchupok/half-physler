@@ -1,6 +1,6 @@
 # Overview
 
-The _Half-Phylser_ as presented in NIME 2019
+The _Half-Physler_ as presented in NIME 2019
 
 This repository contains material to build a virtual single-reed instrument called the _Half-Physler_. In this design the excitation mechanism of the instrument is based on actual instrument parts (mouthpiece, clarinet reed, ligature) but the tube is simulated on the [Bela](http://www.bela.io) board.
 
