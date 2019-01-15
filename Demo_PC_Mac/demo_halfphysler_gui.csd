@@ -30,9 +30,9 @@ FLpanel "The Half-Physler Parameter Panel", 780, 700, 50, 50 ;iwidth, iheight, i
     idisp4 FLvalue "",        100,      30,  540, 290
     idisp5 FLvalue "",        100,      30,  540, 370
     idisp6 FLvalue "",        100,      30,  540, 450
- 
+
     ;FLslider puts a slider into the corresponding container.
-    
+
     ;                                                                             imin,    imax, iexp, itype,      idisp, iwidth, iheight, ix,   iy
     gk_Length,         gihandle1  FLslider "Length",                               0.3,    1.20,    0,      5,    idisp1,   500,       30, 20,   50
     gk_Radius,         gihandle2  FLslider "Initial Radius",                       0.0035, 0.01,    0,      5,    idisp2,   500,       30, 20,  130
@@ -44,7 +44,7 @@ FLpanel "The Half-Physler Parameter Panel", 780, 700, 50, 50 ;iwidth, iheight, i
     gkt1, iht1  FLbutton "Pling!",           1, 0, 2, 200, 100,  20, 550, 0, 3, 0, 100
     gkt2, iht2  FLbutton "Reset Parameters", 0, 0, 1, 200, 100, 230, 550, 0, 2, 0, 3
     gkt3, iht3 FLbutton "Fix Slope \n (End Radius inactive)",        1, 0, 2, 200, 100, 440, 550, -1
-    
+
 FLpanelEnd
 
 FLrun
@@ -64,7 +64,7 @@ instr 1
 aIn mpulse 1, .5
 aFeed, aSound halfphysler aIn, gk_Length, gk_Radius, gk_Slope, gk_EndReflection, gk_Density, gk_Pos
 prints "PLAYING Half-Physler: Simple Cone with radiation losses with increasing the length.\n"
-out aFeed*0.002
+out aSound*0.002
 
 
 endin
@@ -99,8 +99,8 @@ if (gkt3 == 1) then
 
       ; Set Slope accordingly
       gk_Slope  =  (gk_EndRadius - gk_Radius)/gk_Length
-      
-   endif	    
+
+   endif
 endif
 
 ; Display Slope
@@ -111,7 +111,7 @@ if (gkt3 == 0) then
    gk_bool  = 1
    gk_Slope  =  (gk_EndRadius - gk_Radius)/gk_Length
 
-endif    
+endif
 
 
 endin
