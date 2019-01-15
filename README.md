@@ -4,7 +4,7 @@ The _Half-Physler_ as presented in NIME 2019
 
 This repository contains material to build a virtual single-reed instrument called the _Half-Physler_. In this design the excitation mechanism of the instrument is based on actual instrument parts (mouthpiece, clarinet reed, ligature) but the tube is simulated on the [Bela](http://www.bela.io) board.
 
-In this repository you find the C++ code to compile the tube model as an opcode for [Csound](https://csound.com). The opcode is implemented following the guidlines of the _Csound Plugin Opcode Framwork_ by Lazzarini (2017).
+In this repository you find the C++ code to compile the tube model as an opcode for [Csound](https://csound.com). The opcode is implemented following the guidelines of the _Csound Plugin Opcode Framwork_ by Lazzarini (2017).
 
 
 
