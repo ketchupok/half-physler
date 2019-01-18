@@ -170,14 +170,14 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
                 (rad_betaS/(mult_rho * rho) + rad_alphaS/(mult_rho * rho)*dt);
 
      i = i+1;
-     
+
       // Copying p(n+1) to p(n) and v(n+1) to v(n),
       // i.e. new becomes old grid for next call
       std::copy(pnew.begin(), pnew.end(), pold.begin());
       std::copy(vnew.begin(), vnew.end(), vold.begin());
 
       // sound is obtained at given position
-      int pickup_idx = ceil(pickup_pos * L/dx);
+      int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
       o_sound = pnew[pickup_idx];  // Output the damped ending of the tube to csound
     }
 

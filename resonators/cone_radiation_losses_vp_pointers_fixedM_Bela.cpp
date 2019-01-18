@@ -180,8 +180,11 @@ struct Cone_Radiation_Losses_fixedM_Bela : csnd::Plugin<2, 7> {
       std::copy(vnew.begin(), vnew.end(), vold.begin());
 
       /* ---  Sound output --- */
-      o_sound = pnew[M];  // Output the damped ending of the tube to speaker
+      //o_sound = pnew[M];  // Output the damped ending of the tube to speaker
 
+      // sound is obtained at given position
+      int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
+      o_sound = pnew[pickup_idx];  // Output the damped ending of the tube to csound
     }
 
     Lold      = L;
