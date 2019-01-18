@@ -14,15 +14,33 @@ The best way to install Csound is to follow the instructions on the [Csound Webs
 
 
 
-## Install the Halfphysler
- git clone https://github.com/ketchupok/half-physler.git
+## Install the Halfphysler (general info)
 
  ```
- cd half-physler
+git clone https://github.com/ketchupok/half-physler.git
 
- make
+cd half-physler
+
+make
 ```
-## Usage
+It can be a bit difficult to access the Internet on the Bela Mini, as it has neither Wifi nor Ethernet on Bord. On the Mac, you can share Internet with the Bela Mini plugged to your Mac via USB port.
+
+In short:
+In Mac Setting allow under 'Sharing' that internet is shared with
+(then the Bela IDE in the browser freezes)
+
+
+In your terminal log into Bela again:
+```
+myMac$> ssh root@bela.local
+
+bela$> dhclient usb1
+```
+[Find more details here.](https://www.hackster.io/hologram/sharing-internet-with-the-pocketbeagle-on-osx-cd62b2).
+
+## Using the Half-physler Opcode
+
+First run a Demo.
 
 ### Mac
 
@@ -38,6 +56,7 @@ csound Demo_PC_Mac/demo_halfphysler.csd
 
 
 ## Bela
+
 This example needs an external signal! So connect a sound source to the audioIn0 of your Bela board. And a speaker to your right output, to hear some sound.
 
 ```
