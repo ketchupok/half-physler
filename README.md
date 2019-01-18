@@ -38,7 +38,7 @@ csound Demo_PC_Mac/demo_halfphysler.csd
 
 
 ## Bela
-Connect a sound source to the audioIn0 of your Bela board. And a speaker to your right output, to hear some sound.
+This example needs an external signal! So connect a sound source to the audioIn0 of your Bela board. And a speaker to your right output, to hear some sound.
 
 ```
 make installBela
