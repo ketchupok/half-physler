@@ -23,24 +23,30 @@ cd half-physler
 
 make
 ```
-It can be a bit difficult to access the Internet on the Bela Mini, as it has neither Wifi nor Ethernet on Bord. On the Mac, you can share Internet with the Bela Mini plugged to your Mac via USB port.
+It can be a bit difficult to access the Internet on the Bela Mini, as it has neither Wifi nor Ethernet on bord. On the Mac, you can share Internet with the Bela Mini plugged to your Mac via the USB port.
 
 In short:
-In Mac Setting allow under 'Sharing' that internet is shared with
+In Mac setting allow under 'Sharing' that internet is shared with Bela and Beaglbone.
 (then the Bela IDE in the browser freezes)
 
 
-In your terminal log into Bela again:
+In your terminal log into Bela:
 ```
 myMac$> ssh root@bela.local
 
 bela$> dhclient usb1
+
+bela$> git clone https://github.com/ketchupok/half-physler.git
+
+bela$> cd half-physler
+
+bela$> make
 ```
 [Find more details here.](https://www.hackster.io/hologram/sharing-internet-with-the-pocketbeagle-on-osx-cd62b2).
 
 ## Using the Half-physler Opcode
 
-First run a Demo.
+First run a simple demo.
 
 ### Mac
 
@@ -72,7 +78,7 @@ In some cases we observed that building on Bela fails with error "plugin.h" not 
 
 # Csound Opcodes:
 
-- halfphysler
+## halfphysler
 
 Resonator with radiation losses, driven by an initial air velocity.
 
@@ -81,15 +87,15 @@ Csound code:
    aFeedb, aSound halfphysler aVelocity, kLength, kRad, kSlope, kEndReflection, kDensity, kPos
 ```
 
-aVelocity      = input signal to drive the tube model
-kLength        = length of resonator in meters
-kRad           = radius of beginning section in meters
-kEndReflection = multiplier for end reflection
+- aVelocity      = input signal to drive the tube model
+- kLength        = length of resonator in meters
+- kRad           = radius of beginning section in meters
+- kEndReflection = multiplier for end reflection
 coefficient
-kDensity       = multiplier for air density
-k_Pos          = pickup position along the tube (0-1) relative to length (this only affects the aSound output, not the aFeedb!)
+- kDensity       = multiplier for air density
+- k_Pos          = pickup position along the tube (0-1) relative to length (this only affects the aSound output, not the aFeedb!)
 
-- halfphysler_bela
+## halfphysler_bela
 
 The halfphysler_bela version uses a fixed number of grid points for the model (M=32). This ensures that the no memory will be allocated in the real-time thread, and a number of gridpoints is used that does not cause dropouts on _Bela Mini_. Furthermore, the _feedback_ output is set to compensate for the latency of the _Bela Mini Board_ (--period=32).
 
