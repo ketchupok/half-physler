@@ -7,8 +7,14 @@ This repository contains material to build a virtual single-reed instrument call
 In this repository you find the C++ code to compile the tube model as an opcode for [Csound](https://csound.com). The opcode is implemented following the guidlines of the _Csound Plugin Opcode Framwork_ by Lazzarini (2017).
 
 
+## Requirements
+This is a Plug-In for [Csound](https://csound.com). So make sure you have the latest Csound (Version 6.10 and higher) installed.
 
-## Install
+The best way to install Csound is to follow the instructions on the [Csound Website](https://csound.com).
+
+
+
+## Install the Halfphysler
  git clone https://github.com/ketchupok/half-physler.git
 
  ```
@@ -32,11 +38,14 @@ csound Demo_PC_Mac/demo_halfphysler.csd
 
 
 ## Bela
+Connect a sound source to the audioIn0 of your Bela board. And a speaker to your right output, to hear some sound.
 
 ```
 make installBela
 belacsound --csd=/Bela/projects/Bela_HalfPhysler_DemoProject/_main.csd --period=32
 ```
+
+In some cases we observed that building on Bela fails with error "plugin.h" not found. If you observe this, please report us.
 
 ### Windows
 - currently not supported
@@ -50,7 +59,7 @@ Resonator with radiation losses, driven by an initial air velocity.
 
 Csound code:
 ```
-   aFeedb, aSound halfphysler aVelocity, kLength, kRad, kSlope, kEndReflection, kDensity
+   aFeedb, aSound halfphysler aVelocity, kLength, kRad, kSlope, kEndReflection, kDensity, kPos
 ```
 
 aVelocity      = input signal to drive the tube model
@@ -59,7 +68,7 @@ kRad           = radius of beginning section in meters
 kEndReflection = multiplier for end reflection
 coefficient
 kDensity       = multiplier for air density
-
+k_Pos          = pickup position along the tube (0-1) relative to length (this only affects the aSound output, not the aFeedb!)
 
 - halfphysler_bela
 
