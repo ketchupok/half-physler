@@ -16,7 +16,7 @@ ifeq ($(UNAME), Linux)
 else ifeq ($(UNAME), Darwin)
 	DYL	= -dynamiclib
 	FLAGS   = -std=c++11
-	LDLIBS  = -I /Library/Frameworks/CsoundLib64.framework/Versions/current/Headers/
+	LDLIBS  = -I ~/Library/Frameworks/CsoundLib64.framework/Versions/current/Headers/
 endif
 
 
