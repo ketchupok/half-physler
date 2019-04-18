@@ -29,17 +29,55 @@
 void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
                MYFLT c = 3.4386e+02);
 
+void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
+
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
                         const MYFLT& rho_user, const MYFLT *S,
                         const MYFLT *pold, const MYFLT *vold,
                         MYFLT *pnew, MYFLT *vnew);
 
+void update_visco_pointers(int M, MYFLT* sumZ1, MYFLT* sumY1, \
+			 MYFLT* sumZ2, MYFLT* sumY2, \
+			 MYFLT* eLZ, MYFLT* eCY, \
+			 MYFLT* wlossold, MYFLT* qlossold, MYFLT dx, \
+			 MYFLT dt, MYFLT rho, MYFLT* factors_v, MYFLT* factors_p, \
+			 MYFLT* S, MYFLT* vold, MYFLT* pold, \
+			 MYFLT* vnew, MYFLT* pnew);
+
 MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope);
 
+MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, csnd::AuxMem<MYFLT> radii_in, csnd::AuxMem<MYFLT> radii_out, csnd::AuxMem<MYFLT> curve_type, MYFLT x, int size);
+
+MYFLT linear_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+MYFLT parabolic_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+MYFLT exponential_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r); // TODO: change to pointer
+
+MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
+
+/* AH: remove??
 void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
                    csnd::AuxMem<MYFLT> knew, csnd::AuxMem<MYFLT> kold);
-
+*/
 void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold,
                             MYFLT *knew, MYFLT *kold);
+
+void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
+            MYFLT* klossnew, MYFLT*  klossold);
+
+
+void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
+			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \
+			 MYFLT lz_tmp[], MYFLT gy_tmp[], MYFLT cy_tmp[], MYFLT* sumZ1, \
+			 MYFLT* sumY1, MYFLT dt, MYFLT rho, MYFLT c, \
+			 MYFLT* eLZ, MYFLT* eCY, \
+			 MYFLT* MATZ, MYFLT* MATSY, \
+			 MYFLT* factors_v, MYFLT* factors_p, MYFLT eta = 1.8200e-05, \
+             MYFLT Zmult = 1, MYFLT Ymult = 1);
+
+
 
 #endif  // SRC_TUBE_H_
