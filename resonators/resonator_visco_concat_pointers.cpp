@@ -1,23 +1,47 @@
+/*
+  file: resonators/resonator_visco_concat_pointers.cpp
+  opcode-name: tube_resonator opcode
+
+  Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
+                       Sebastian Schmutzhard, Gokberk Erdogan
+
+  C++ Implementation of Wind instrument models within the
+  Csound-Plug-in Framwork by Lazzarini (SMC2017 - Paper)
+
+  Resonator models taken from:
+
+  **Schmutzhard, Sebastian; Chatziioannou, Vasileios, and Hofmann, Alex (2017)
+    "Parameter Optimisation of a Viscothermal Time-Domain Model for Wind
+    Instruments," in Proceedings of the 2017 International Symposium on
+    Musical Acoustics (Montreal, CA) p. 27--30.(ISMA2017)**
+
+  This file is part of Csound.
+
+  The Csound Library is free software; you can redistribute it
+  and/or modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  Csound is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with Csound; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  02110-1301 USA
+*/
+
 #include <atomic>
 #include <iostream>
 #include <plugin.h>
 #include <random>
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
-/*
-    C++ Implementation of Wind instrument models by
-    Sebastian Schmutzhard, Alex Hofmann, Vasileios Chatziioannou and Gokberk Erdogan (2018),
-    within the Csound-Plug-in Framwork by Lazzarini (SMC2017 - Paper)
-
-    Resonator models taken from:
-    Schmutzhard, Sebastian; Chatziioannou, Vasileios, and Hofmann, Alex (2017)
-    "Parameter Optimisation of a Viscothermal Time-Domain Model for Wind Instruments,"
-    in Proceedings of the 2017 International Symposium on Musical Acoustics (Montreal, CA) p. 27--30.
-    (ISMA2017)
-*/
 
 struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
-  // Second Resonator, with radiation losses taken into account
+  // TODO: add infos here!
   csnd::AuxMem<MYFLT> pold; // Pressure value at (n)th time grid
   csnd::AuxMem<MYFLT> vold; // Velocity value at (n)th time grid
   csnd::AuxMem<MYFLT> pnew; // Pressure value at (n+1)th time grid
@@ -31,18 +55,18 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   csnd::AuxMem<MYFLT>::iterator iter_vnew;
   csnd::AuxMem<MYFLT>::iterator iter_S;
 
-  
-  int M;             //Number of steps
-  int Mold;          //Previous number of steps
-  int Mmax;          //Maximal number of steps
-  MYFLT L;          //Length of the body
-  MYFLT Lold;       //previous length
-  MYFLT dt;         //Time grid
-  MYFLT fs;           // Sampling rate
-  MYFLT dx;         //Step size
-  MYFLT dxold;      //Step size
-  MYFLT rad_alphaS;  //Radiation parameter alpha
-  MYFLT rad_betaS;   //Radiation parameter beta
+
+  int M;             // Number of steps
+  int Mold;          // Previous number of steps
+  int Mmax;          // Maximal number of steps
+  MYFLT L;           // Length of the tube
+  MYFLT Lold;        // Previous length of the tube
+  MYFLT dt;          // Time grid
+  MYFLT fs;          // Sampling rate
+  MYFLT dx;          // Step size
+  MYFLT dxold;       // Previous step size
+  MYFLT rad_alphaS;  // Radiation parameter alpha
+  MYFLT rad_betaS;   // Radiation parameter beta
 
   // -------------------------------
   MYFLT c_user;    // = 3.4386e+02;  // speed of sound
@@ -52,7 +76,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   MYFLT Ymult;  // shunt admittance multiplier
 
 
-  
+
   MYFLT rz_tmp[4];
   MYFLT lz_tmp[4];
   MYFLT gy_tmp[4];
@@ -69,7 +93,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   csnd::AuxMem<MYFLT> wlossold;
 
 
-  // iterators 
+  // iterators
   csnd::AuxMem<MYFLT>::iterator iter_eLZ;
   csnd::AuxMem<MYFLT>::iterator iter_eCY;
   csnd::AuxMem<MYFLT>::iterator iter_MATZ;
@@ -88,7 +112,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   csnd::AuxMem<MYFLT> sumZ2;
   csnd::AuxMem<MYFLT> sumY2;
 
-  // iterators 
+  // iterators
   csnd::AuxMem<MYFLT>::iterator iter_sumZ1;
   csnd::AuxMem<MYFLT>::iterator iter_factors_v;
   csnd::AuxMem<MYFLT>::iterator iter_sumY1;
@@ -96,7 +120,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   csnd::AuxMem<MYFLT>::iterator iter_sumZ2;
   csnd::AuxMem<MYFLT>::iterator iter_sumY2;
 
-  
+  // user gemoetry settings
   csnd::AuxMem<MYFLT> cone_lengths;
   csnd::AuxMem<MYFLT> radii_in;
   csnd::AuxMem<MYFLT> radii_out;
@@ -105,8 +129,8 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   MYFLT x;            //Position for m*dx
   MYFLT xl;           //Position for m1*dxold
   MYFLT xr;           //Position for m2*dxold
-  int    m1;
-  int    m2;
+  int m1;
+  int m2;
 
 
 
@@ -136,7 +160,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
     grid_init_visco(.2, dt, Mmax, &dx, &M, &L, c_user); // setup the grid for finite differences
 
 
-    
+
     // ---------------------------------------------------------------------------
     // Allocate state arrays
     pold.allocate(csound, Mmax+1); //Memory Allocation
@@ -170,7 +194,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
     iter_qlossold  =  qlossold.begin();
     wlossold.allocate(csound, 4*(Mmax+1));
     iter_wlossold  =  wlossold.begin();
-    
+
     sumZ1.allocate(csound, Mmax+1);
     iter_sumZ1  =  sumZ1.begin();
     factors_v.allocate(csound, Mmax+1);
@@ -197,7 +221,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
 
 
     //    compute_loss_arrays(M, S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
-    cy_tmp, sumZ1, sumY1, dt, rho, c, eLZ, eCY, MATZ, MATSY, factors_v, factors_p);
+    // cy_tmp, sumZ1, sumY1, dt, rho, c, eLZ, eCY, MATZ, MATSY, factors_v, factors_p);
 
     // ---------------------------------------------------------------------------
     // compute loss arrays
@@ -205,7 +229,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
                         cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, c_user, iter_eLZ, iter_eCY, iter_MATZ,
                         iter_MATSY, iter_factors_v, iter_factors_p, Zmult, Ymult);
 
-    
+
     // ---------------------------------------------------------------------------
     // initialize loss state arrays w and q to 0
     for (int m = 0; m <= M; m++) {
@@ -255,6 +279,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
 	//  compute_loss_arrays(M, S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
   cy_tmp, sumZ1, sumY1, dt, rho, c, eLZ, eCY, MATZ, MATSY, factors_v, factors_p);
 
+// Why are both called here??
     interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
     interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
     interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
@@ -273,7 +298,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
     for (auto &o : out) { // for each sample ..
 
       //      update_visco(M, sumZ1, sumY1, sumZ2, sumY2, eLZ, eCY, wlossold, qlossold, \
-      dx, dt, rho, factors_v, factors_p, S, vold, pold, vnew, pnew);
+     // dx, dt, rho, factors_v, factors_p, S, vold, pold, vnew, pnew);
 
       update_visco_pointers(M, iter_sumZ1, iter_sumY1, iter_sumZ2, iter_sumY2, iter_eLZ, iter_eCY, iter_wlossold, iter_qlossold,
                 dx, dt, rho_user, iter_factors_v, iter_factors_p, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
@@ -315,9 +340,9 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
       std::copy(vnew.begin(), vnew.end(), vold.begin());
       std::copy(wloss.begin(), wloss.end(), wlossold.begin());
       std::copy(qloss.begin(), qloss.end(), qlossold.begin());
-	
 
-      
+
+
     }
     Lold = L;
     Mold = M;
