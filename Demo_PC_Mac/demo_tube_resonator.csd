@@ -13,7 +13,7 @@ sr = 44100
 instr 6
     icone_lengths[] fillarray 0.0316, 0.051, .3, 0.2       ; lengths of cone segments [m]
     iradii_in[] fillarray 0.0055, 0.00635, 0.0075, 0.0075   ; radii of cone segments [m]
-    iradii_out[]  fillarray 0.0055, 0.0075, 0.0075, 0.0275  ; slopes of cone segments
+    iradii_out[]  fillarray 0.0055, 0.0075, 0.0075, 0.0275  ; ??slopes of cone segments?? or radius??
     icurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
     aImpulse mpulse 1, .1
     k1 randomh .7, .5, 4
