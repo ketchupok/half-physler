@@ -1,10 +1,11 @@
 /*
-  cone_radiation_losses.cpp:
+  file: resonators/cone_radiation_losses_vp_pointers_fixedM_Bela.cpp
+  opcode-name: halfphysler_bela
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
                        Sebastian Schmutzhard, Gokberk Erdogan
 
-  C++ Implementation of Wind instrument models by within the
+  C++ Implementation of Wind instrument models within the
   Csound-Plug-in Framwork by Lazzarini (SMC2017 - Paper)
 
   Resonator models taken from:
@@ -47,6 +48,7 @@ struct Cone_Radiation_Losses_fixedM_Bela : csnd::Plugin<2, 7> {
      Here Latency is compensated for running with audioFrames=32 (32 sample delay)
 
      aFeedb, aSound cone_radiation_losses aPressure, kLength, kRad, kSlope, kEndReflection, kDensity
+     AH (was cone_radiation_losses.cpp: )
   */
 
   csnd::AuxMem<MYFLT> pold;     // Pressure value at (n)th time grid

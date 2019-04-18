@@ -1,10 +1,11 @@
 /*
-  cone_radiation_losses.cpp:
+  file: resonators/cone_radiation_losses_vp_pointers_PC.cpp
+  opcode-name: halfphysler
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
                        Sebastian Schmutzhard, Gokberk Erdogan
 
-  C++ Implementation of Wind instrument models by within the
+  C++ Implementation of Wind instrument models within the
   Csound-Plug-in Framwork by Lazzarini (SMC2017 - Paper)
 
   Resonator models taken from:
