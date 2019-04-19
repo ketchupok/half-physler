@@ -1,6 +1,6 @@
 /*
   file: resonators/resonator_visco_concat_pointers.cpp
-  opcode-name: tube_resonator opcode
+  opcode-name: tube_resonator
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
                        Sebastian Schmutzhard, Gokberk Erdogan
@@ -40,7 +40,7 @@
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
 
-struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
+struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   // TODO: add infos here!
   csnd::AuxMem<MYFLT> pold; // Pressure value at (n)th time grid
   csnd::AuxMem<MYFLT> vold; // Velocity value at (n)th time grid
@@ -132,6 +132,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   int m1;
   int m2;
 
+  MYFLT pickup_pos;             // user defined pickup position in tube
 
 
   int init() {
@@ -142,15 +143,16 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
     Zmult             = 1;
     Ymult             = 1;
 
-    cone_lengths.allocate(csound,inargs.vector_data<MYFLT>(2).len());
-    radii_in.allocate(csound,inargs.vector_data<MYFLT>(3).len());
-    radii_out.allocate(csound,inargs.vector_data<MYFLT>(4).len());
-    curve_type.allocate(csound,inargs.vector_data<MYFLT>(5).len());
+    cone_lengths.allocate(csound,inargs.vector_data<MYFLT>(3).len());
+    radii_in.allocate(csound,inargs.vector_data<MYFLT>(4).len());
+    radii_out.allocate(csound,inargs.vector_data<MYFLT>(5).len());
+    curve_type.allocate(csound,inargs.vector_data<MYFLT>(6).len());
 
-    std::copy(inargs.vector_data<MYFLT>(2).begin(),inargs.vector_data<MYFLT>(2).end(),cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(),inargs.vector_data<MYFLT>(4).end(),radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),curve_type.begin());
+    pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),inargs.vector_data<MYFLT>(4).end(),radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(6).begin(),inargs.vector_data<MYFLT>(6).end(),curve_type.begin());
 
     // --------------------------------------------------------------------------
     // Compute values for spatial and temporal grid
@@ -248,15 +250,17 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
   }
 
   int aperf() { // calculate one audio block
-    csnd::AudioSig out(this, outargs(0));
-    csnd::AudioSig in(this, inargs(0)); // Csound opcode in
-    //    L = inargs[1]; // Change in length according to input value from Csound
-    std::copy(inargs.vector_data<MYFLT>(2).begin(),inargs.vector_data<MYFLT>(2).end(),cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(),inargs.vector_data<MYFLT>(4).end(),radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),curve_type.begin());
+      csnd::AudioSig out_feedback(this, outargs(0));   // feedback output (M = 0)
+      csnd::AudioSig out_sound(this, outargs(1));   // sound out (at vari M != 0)
+      csnd::AudioSig in(this, inargs(0));              // Csound opcode in
 
-    L = inargs[1];
+    L = inargs[1];   // Length as input
+    pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),inargs.vector_data<MYFLT>(4).end(),radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(6).begin(),inargs.vector_data<MYFLT>(6).end(),curve_type.begin());
+
 
     if(inargs[1]!=Lold)
       { //Ensures that new calculations are made only when L is changed
@@ -295,32 +299,21 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
 
 
     int i  = 0;
-    for (auto &o : out) { // for each sample ..
+    for (auto &o_sound : out_sound) { // for each sample ..
 
       //      update_visco(M, sumZ1, sumY1, sumZ2, sumY2, eLZ, eCY, wlossold, qlossold, \
-     // dx, dt, rho, factors_v, factors_p, S, vold, pold, vnew, pnew);
+      // dx, dt, rho, factors_v, factors_p, S, vold, pold, vnew, pnew);
 
-      update_visco_pointers(M, iter_sumZ1, iter_sumY1, iter_sumZ2, iter_sumY2, iter_eLZ, iter_eCY, iter_wlossold, iter_qlossold,
+        out_feedback[i] = pnew[0];
+        vnew[0]  = in[i]; //Put comment here
+        update_visco_pointers(M, iter_sumZ1, iter_sumY1, iter_sumZ2, iter_sumY2, iter_eLZ, iter_eCY, iter_wlossold, iter_qlossold,
                 dx, dt, rho_user, iter_factors_v, iter_factors_p, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
 
-      vnew[0]  = in[i]; //Put comment here
-      i++;
-      pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
-      o = pnew[M];
-
-
-
-      //Updating arrays
-//      for (int m = 0; m <= M; m++) {
-//	for (int k = 0; k<4; k++){
-//	  wloss[m][k]  =  wlossold[m][k]*eLZ[m][k] + (vnew[m]-vold[m])*MATZ[m][k];
-//	  qloss[m][k]  =  qlossold[m][k]*eCY[m][k] + (pnew[m]-pold[m])*MATSY[m][k];
-//	  wlossold[m][k] = wloss[m][k];
-//	  qlossold[m][k] = qloss[m][k];
-//	}
-//	pold[m] = pnew[m];
-//	vold[m] = vnew[m];
-//      }
+        pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
+        i++;
+        int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
+        //printf("%f\n", pickup_pos);
+        o_sound = pnew[pickup_idx];
 
 
       // Updating arrays
@@ -330,11 +323,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<1, 6> {
                             + (vnew[m]-vold[m])*MATZ[m*4+k];
             qloss[m*4+k]  =  qlossold[m*4+k]*eCY[m*4+k]
                             + (pnew[m]-pold[m])*MATSY[m*4+k];
-	    //            wlossold[m*4+k] = wloss[m*4+k];
-	    //            qlossold[m*4+k] = qloss[m*4+k];
         }
-	//        pold[m] = pnew[m];
-	//        vold[m] = vnew[m];
       }
       std::copy(pnew.begin(), pnew.end(), pold.begin());
       std::copy(vnew.begin(), vnew.end(), vold.begin());
