@@ -41,12 +41,12 @@
 #include "../src/const.h"  // Includes the constants
 
 struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
-  // TODO: add infos here!
-  csnd::AuxMem<MYFLT> pold; // Pressure value at (n)th time grid
-  csnd::AuxMem<MYFLT> vold; // Velocity value at (n)th time grid
-  csnd::AuxMem<MYFLT> pnew; // Pressure value at (n+1)th time grid
-  csnd::AuxMem<MYFLT> vnew; // velocity value at (n+1)th time grid
-  csnd::AuxMem<MYFLT> S;    //Cross sectional area
+  // TODO(AH):add infos here!
+  csnd::AuxMem<MYFLT> pold;  // Pressure value at (n)th time grid
+  csnd::AuxMem<MYFLT> vold;  // Velocity value at (n)th time grid
+  csnd::AuxMem<MYFLT> pnew;  // Pressure value at (n+1)th time grid
+  csnd::AuxMem<MYFLT> vnew;  // velocity value at (n+1)th time grid
+  csnd::AuxMem<MYFLT> S;     // Cross sectional area
 
   // iterators to be passed to update_vp_pointers()
   csnd::AuxMem<MYFLT>::iterator iter_pold;
@@ -126,9 +126,9 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> radii_out;
   csnd::AuxMem<MYFLT> curve_type;
 
-  MYFLT x;            //Position for m*dx
-  MYFLT xl;           //Position for m1*dxold
-  MYFLT xr;           //Position for m2*dxold
+  MYFLT x;            //  Position for m*dx
+  MYFLT xl;           //  Position for m1*dxold
+  MYFLT xr;           //  Position for m2*dxold
   int m1;
   int m2;
 
@@ -137,16 +137,16 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
 
   int init() {
 
-    c_user            = 3.4386e+02;  //u-m speed of sound
-    rho_user          = 1.2000e+00;  //u-m density
-    eta_user          = 1.8200e-05;  //u-m air viscosity
+    c_user            = 3.4386e+02;  // u-m speed of sound
+    rho_user          = 1.2000e+00;  // u-m density
+    eta_user          = 1.8200e-05;  // u-m air viscosity
     Zmult             = 1;
     Ymult             = 1;
 
-    cone_lengths.allocate(csound,inargs.vector_data<MYFLT>(3).len());
-    radii_in.allocate(csound,inargs.vector_data<MYFLT>(4).len());
-    radii_out.allocate(csound,inargs.vector_data<MYFLT>(5).len());
-    curve_type.allocate(csound,inargs.vector_data<MYFLT>(6).len());
+    cone_lengths.allocate(csound, inargs.vector_data<MYFLT>(3).len());
+    radii_in.allocate(csound, inargs.vector_data<MYFLT>(4).len());
+    radii_out.allocate(csound, inargs.vector_data<MYFLT>(5).len());
+    curve_type.allocate(csound, inargs.vector_data<MYFLT>(6).len());
 
     pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
     std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),cone_lengths.begin());

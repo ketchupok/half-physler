@@ -79,13 +79,12 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
   MYFLT pickup_pos;             // user defined pickup position in tube
 
   int init() {
-
     L          = inargs[1];  // Length as input
     r          = inargs[2];  // Radius as input
     slope      = inargs[3];  // Slope as input
     mult_alpha = inargs[4];  // tube end reflection coefficient (radiation)
     mult_rho   = inargs[5];  // density coefficient
-    pickup_pos = inargs[6];  //  TODO: relative pickup position M/2 to M
+    pickup_pos = inargs[6];  // TODO(AH): relative pickup position M/2 to M
 
     fs = csound->sr();
     dt = 1.0/fs;
