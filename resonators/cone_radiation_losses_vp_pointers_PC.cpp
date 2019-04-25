@@ -44,7 +44,9 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
      an initial air velocity. The shape can be defined as a cone by passing the
      slope as an input argument.
 
-     aFeedb, aSound cone_radiation_losses aPressure, kLength, kRad, kSlope kRad, kSlope, kEndReflection, kDensity
+     aFeedb, aSound cone_radiation_losses aAirVelocity, kLength, kPickupPos,
+                                          icone_lengths, iradii_in, iradii_out,
+                                          icurve_type
   */
 
   csnd::AuxMem<MYFLT> pold;     // Pressure value at (n)th time grid
@@ -95,7 +97,7 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
     pnew.allocate(csound, Mmax+1);
     vold.allocate(csound, Mmax+1);
     vnew.allocate(csound, Mmax+1);
-    S.allocate(csound, Mmax+1);
+    S.allocate(csound, Mmax+1);  // Cross-sectional area
 
     iter_pnew = pnew.begin();
     iter_vnew = vnew.begin();
@@ -113,7 +115,7 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
       S[m] = cross_area(r, m*dx, 0, slope);  // Input radius of cone
     }
 
-    rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
+    rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalize radiation parameters
     rad_betaS = rad_beta / c;
     Lold      = L;
     r_old     = r;
