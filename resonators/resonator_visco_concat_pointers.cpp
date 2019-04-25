@@ -111,7 +111,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     // ------Compute values for spatial and temporal grid-----------------------
     fs = csound->sr();
     dt = 1.0/fs;
-    grid_init(L, dt, &dx, &M, &L);  // setup grid for finite difference
+    grid_init(0.5, dt, &dx, &M, &L);  // setup grid for finite difference
 
     // -----Allocate memory for grid state arrays------------------------------
     // using Mmax instead of M, allows 'Length' changes w/o new alloc in aperf()
