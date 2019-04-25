@@ -46,22 +46,7 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
   M[0]   = std::min(M[0], Mmax);
   dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
   }
-/*
-  void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT * dx, int * M, MYFLT * L, MYFLT c)
-  {
-    // INPUTS: (total) length and maximum number of grid points
-    // calculate time step and grid size, taking stability into account
-    // return length and grid size (M and dx)
 
-    // In order to satisfy the stability conditions dx/dt>c and M*dx = L
-    L[0] = Len;
-    dx[0]  = c*dt;
-    dx[0]  = dx[0]/0.9;  // Guarantees the first stability condition
-    M[0]   = int(floor(L[0] / dx[0]));  // Number of steps has to be an integer
-    M[0]   = std::min(M[0],Mmax);
-    dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
-    }
-*/
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
                 const MYFLT& c, const MYFLT& rho_user, \
                 const MYFLT *S, \
