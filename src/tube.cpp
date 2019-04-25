@@ -60,6 +60,11 @@
   csnd::AuxMem<MYFLT> sumZ2;
   csnd::AuxMem<MYFLT> sumY2;
 
+  MYFLT rz_tmp[4];
+  MYFLT lz_tmp[4];
+  MYFLT gy_tmp[4];
+  MYFLT cy_tmp[4];
+
   // iterators
   csnd::AuxMem<MYFLT>::iterator iter_sumZ1;
   csnd::AuxMem<MYFLT>::iterator iter_factors_v;
@@ -233,7 +238,7 @@ MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, \
   prelength = prelength - cone_lengths[seg];  // set back to end of last segment
   seg = seg - 1;
 */
-printf("prelength before switch: %f\n", prelength);
+//printf("prelength before switch: %f\n", prelength);
   switch (int(curve_type[seg])) {  // converting MYFLT to int for switch()
     case 1:  // 1 for linear approximation
       area = linear_approx(radii_in[seg], radii_out[seg], grid_pos,  \
@@ -248,7 +253,7 @@ printf("prelength before switch: %f\n", prelength);
                                 prelength, cone_lengths[seg]);
       break;
   }
-  printf("area: %f\n", area);
+  //printf("area: %f\n", area);
   return area;
 }
 
@@ -403,9 +408,7 @@ MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
                                 MYFLT LsZ[4][100], MYFLT GsY[4][100], \
-                                MYFLT CsY[4][100], MYFLT rz_tmp[], \
-                                MYFLT lz_tmp[], MYFLT gy_tmp[],  \
-                                MYFLT cy_tmp[], MYFLT dt, MYFLT rho, MYFLT c, \
+                                MYFLT CsY[4][100], MYFLT dt, MYFLT rho, MYFLT c, \
                                 MYFLT Zmult, MYFLT Ymult) {
   for (int m = 0; m <= M; m++) {
     MYFLT r  = sqrt(S[m]/PI);

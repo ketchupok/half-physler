@@ -47,6 +47,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
        aFeedb, aSound tube_resonator aPressure, kLength, kRad, kSlope kRad, kSlope, kEndReflection, kDensity
     */
 
+  // grid arrays for pressure and velocity
   csnd::AuxMem<MYFLT> pold;  // Pressure value at (n)th time grid
   csnd::AuxMem<MYFLT> vold;  // Velocity value at (n)th time grid
   csnd::AuxMem<MYFLT> pnew;  // Pressure value at (n+1)th time grid
@@ -85,12 +86,6 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> radii_in;
   csnd::AuxMem<MYFLT> radii_out;
   csnd::AuxMem<MYFLT> curve_type;
-
-  // viscothermal loss variables
-  MYFLT rz_tmp[4];
-  MYFLT lz_tmp[4];
-  MYFLT gy_tmp[4];
-  MYFLT cy_tmp[4];
 
 
   int init() {
@@ -141,7 +136,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
       pnew[m] = 0;
       vnew[m] = 0;
       MYFLT mdx = m*dx;
-      printf("point=%d, pos = %f\n", m, mdx);
+      //printf("point=%d, pos = %f\n", m, mdx);
       // Setting Cross sectional area for each grid point (see ./src/tube.cpp)
       S[m]    = cross_area_concatenation(cone_lengths, radii_in, radii_out, \
                                          curve_type, m*dx, cone_lengths.len() );
@@ -152,8 +147,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
 
     // --------Compute loss arrays---------------------------------------------
 
-    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
-                        gy_tmp, cy_tmp, dt, rho_user, \
+    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
                         c_user, Zmult, Ymult);
 
     init_loss_state_array(M);
@@ -189,8 +183,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
         interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
-        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
-                            gy_tmp, cy_tmp, dt, rho_user, \
+        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
                             c_user, Zmult, Ymult);
     } //Ending bracket for changed length
 

@@ -69,8 +69,8 @@ void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxo
 MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
-			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \
-			 MYFLT lz_tmp[], MYFLT gy_tmp[], MYFLT cy_tmp[], MYFLT dt, MYFLT rho, MYFLT c, \
+			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100],
+             MYFLT dt, MYFLT rho, MYFLT c, \
        MYFLT Zmult = 1, MYFLT Ymult = 1);
 
 
