@@ -173,22 +173,22 @@ MYFLT linear_approx(MYFLT radius_in, MYFLT radius_out, MYFLT grid_pos,  \
     return area;
 }
 
-MYFLT parabolic_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length){
+MYFLT parabolic_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x,  \
+                       MYFLT prelength, MYFLT length) {
   /*x is the current position(m*dx), prelength is the length of the total tube
   up until the current segment, length is the length of the current segment*/
   /*Formula for the parabola is taken as r=a*x^2+b, and variables a and b
   are determined using radius_in and radius_out*/
     MYFLT area;
     MYFLT a, b, r;
-    if(length==0){
-        r=radius_in;
+    if (length == 0) {
+        r = radius_in;
+    } else {
+        b = radius_in;/*At x=0: a*0^2+b=b, b must be equal to initial radius */
+        a = (radius_out-b)/(length*length);/*At x=length: a*length^2+b=radius_out. Solve wrt a */
+        r = a*(x-prelength)*(x-prelength)+b;
     }
-    else{
-        b=radius_in;/*At x=0: a*0^2+b=b, b must be equal to initial radius */
-        a=(radius_out-b)/(length*length);/*At x=length: a*length^2+b=radius_out. Solve wrt a */
-        r=a*(x-prelength)*(x-prelength)+b;
-    }
-    area=r*r*PI;
+    area = r*r*PI;
     return area;
 }
 
@@ -199,21 +199,19 @@ MYFLT exponential_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prele
   are determined using radius_in and radius_out*/
     MYFLT area;
     MYFLT a, k, r;
-    if(length==0){
-        r=radius_in;
+    if (length == 0) {
+        r = radius_in;
+    } else {
+        a = radius_in;/*At x=0: a*e^0=a, so a must equal to initial radius */
+        k = (log(radius_out/a)/length); /*At x=length: a*e^(k*length)=radius_out. Solve wrt k */
+        r = a*exp(k*(x-prelength));
     }
-    else{
-        a=radius_in;/*At x=0: a*e^0=a, so a must equal to initial radius */
-        k=(log(radius_out/a)/length); /*At x=length: a*e^(k*length)=radius_out. Solve wrt k */
-        r=a*exp(k*(x-prelength));
-    }
-    area=r*r*PI;
+    area = r*r*PI;
     return area;
 }
 
-void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) // TODO: change to pointer
-{
-
+void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) {
+    // TODO(AH): change to pointers??
   if (rad < 0.0035) {
     r[0] = coeff[0][0];
     r[1] = coeff[1][0];
@@ -231,10 +229,9 @@ void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) // TODO: change to p
   }
 
   int i = 1;
-  while (radii[i] < rad)
-    {
+  while (radii[i] < rad) {
       i++;
-    };
+    }
 
   r[0] = coeff[0][i-1]*(rad - radii[i])/(radii[i-1]-radii[i]) + coeff[0][i]*(radii[i-1]-rad)/(radii[i-1]-radii[i]);
   r[1] = coeff[1][i-1]*(rad - radii[i])/(radii[i-1]-radii[i]) + coeff[1][i]*(radii[i-1]-rad)/(radii[i-1]-radii[i]);
@@ -269,8 +266,8 @@ void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,
   }
 }
 
-void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
-		   MYFLT* klossnew, MYFLT* klossold){
+void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,  \
+                            MYFLT dxold, MYFLT* klossnew, MYFLT* klossold) {
   MYFLT x, xl, xr;
   int m1, m2;
   for (int m = 0; m<= std::min(M,int(floor(Lold/dx))); m++){
@@ -294,6 +291,7 @@ void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT d
 
 
 MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
+    // TODO(Seb): please add comment
   MYFLT K = r*sqrt(rho/eta);
   MYFLT out  =  8*rho/(K*K);
 
@@ -301,24 +299,25 @@ MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
 };
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
-			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \
-			 MYFLT lz_tmp[], MYFLT gy_tmp[], MYFLT cy_tmp[], MYFLT* sumZ1, \
-			 MYFLT* sumY1, MYFLT dt, MYFLT rho, MYFLT c, \
-			 MYFLT* eLZ, MYFLT* eCY, \
-			 MYFLT* MATZ, MYFLT* MATSY, \
-			 MYFLT* factors_v, MYFLT* factors_p, MYFLT eta, \
-             MYFLT Zmult, MYFLT Ymult){
-
-  for (int m = 0; m <= M; m++){
+                                MYFLT LsZ[4][100], MYFLT GsY[4][100], \
+                                MYFLT CsY[4][100], MYFLT rz_tmp[], \
+                                MYFLT lz_tmp[], MYFLT gy_tmp[],  \
+                                MYFLT cy_tmp[], MYFLT* sumZ1, \
+                                MYFLT* sumY1, MYFLT dt, MYFLT rho, MYFLT c, \
+                                MYFLT* eLZ, MYFLT* eCY, \
+                                MYFLT* MATZ, MYFLT* MATSY, \
+                                MYFLT* factors_v, MYFLT* factors_p, MYFLT eta, \
+                                MYFLT Zmult, MYFLT Ymult) {
+  for (int m = 0; m <= M; m++) {
     MYFLT r  = sqrt(S[m]/PI);
     interp_loss(r, RsZ, rz_tmp);
     interp_loss(r, LsZ, lz_tmp);
     interp_loss(r, GsY, gy_tmp);
     interp_loss(r, CsY, cy_tmp);
-    sumZ1[m] = 0; // needs to be interpolated from old value
+    sumZ1[m] = 0;  // needs to be interpolated from old value
     sumY1[m] = 0;
 
-    for (int k = 0; k<4; k++){
+    for (int k = 0; k < 4; k++) {
       eLZ[m*4+k]  = exp(-lz_tmp[k]*dt);
       eCY[m*4+k]  = exp(-cy_tmp[k]*dt);
 
@@ -329,7 +328,7 @@ void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
       MATSY[m*4+k] = Ymult*S[m]*gy_tmp[k] * exp(-cy_tmp[k]*dt*.5);
     }
 
-    factors_v[m] = rho/dt + sumZ1[m] + R0Z(r, rho, eta); // TODO: give this in function call
+    factors_v[m] = rho/dt + sumZ1[m] + R0Z(r, rho, eta);
     factors_p[m] = S[m]/(rho*c*c*dt) + sumY1[m];
   }
 }
