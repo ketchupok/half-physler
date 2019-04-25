@@ -80,58 +80,18 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   MYFLT Ymult;       // shunt admittance multiplier
   MYFLT pickup_pos;  // user defined pickup position in tube
 
-  // viscothermal loss variables
-  MYFLT rz_tmp[4];
-  MYFLT lz_tmp[4];
-  MYFLT gy_tmp[4];
-  MYFLT cy_tmp[4];
-
-  csnd::AuxMem<MYFLT> eLZ;
-  csnd::AuxMem<MYFLT> eCY;
-  csnd::AuxMem<MYFLT> MATZ;
-  csnd::AuxMem<MYFLT> MATSY;
-  csnd::AuxMem<MYFLT> qloss;
-  csnd::AuxMem<MYFLT> wloss;
-  csnd::AuxMem<MYFLT> qlossold;
-  csnd::AuxMem<MYFLT> wlossold;
-
-  // iterators
-  csnd::AuxMem<MYFLT>::iterator iter_eLZ;
-  csnd::AuxMem<MYFLT>::iterator iter_eCY;
-  csnd::AuxMem<MYFLT>::iterator iter_MATZ;
-  csnd::AuxMem<MYFLT>::iterator iter_MATSY;
-  csnd::AuxMem<MYFLT>::iterator iter_qloss;
-  csnd::AuxMem<MYFLT>::iterator iter_wloss;
-  csnd::AuxMem<MYFLT>::iterator iter_qlossold;
-  csnd::AuxMem<MYFLT>::iterator iter_wlossold;
-
-  csnd::AuxMem<MYFLT> sumZ1;
-  csnd::AuxMem<MYFLT> factors_v;
-  csnd::AuxMem<MYFLT> sumY1;
-  csnd::AuxMem<MYFLT> factors_p;
-
-  csnd::AuxMem<MYFLT> sumZ2;
-  csnd::AuxMem<MYFLT> sumY2;
-
-  // iterators
-  csnd::AuxMem<MYFLT>::iterator iter_sumZ1;
-  csnd::AuxMem<MYFLT>::iterator iter_factors_v;
-  csnd::AuxMem<MYFLT>::iterator iter_sumY1;
-  csnd::AuxMem<MYFLT>::iterator iter_factors_p;
-  csnd::AuxMem<MYFLT>::iterator iter_sumZ2;
-  csnd::AuxMem<MYFLT>::iterator iter_sumY2;
-
   // user gemoetry settings
   csnd::AuxMem<MYFLT> cone_lengths;
   csnd::AuxMem<MYFLT> radii_in;
   csnd::AuxMem<MYFLT> radii_out;
   csnd::AuxMem<MYFLT> curve_type;
 
- // MYFLT x;            //  Position for m*dx
-  //MYFLT xl;           //  Position for m1*dxold
-  //MYFLT xr;           //  Position for m2*dxold
-  //int m1;
-  //int m2;
+  // viscothermal loss variables
+
+  MYFLT rz_tmp[4];
+  MYFLT lz_tmp[4];
+  MYFLT gy_tmp[4];
+  MYFLT cy_tmp[4];
 
 
   int init() {
@@ -173,40 +133,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     iter_vnew  = vnew.begin();
     iter_S     = S.begin();
 
-    // -----Memory allocation for viscothermal loss calculations---------------
-    // Allocate loss arrays
-    // Note: To avoid matrices in aperf, eLZ[m][k]
-    // for k=4 (precision of Sebastian??)
-    // Arrays hold concatenated viscothermal loss factors instead.
-    eLZ.allocate(csound, 4*(Mmax+1));
-    iter_eLZ  =  eLZ.begin();
-    eCY.allocate(csound, 4*(Mmax+1));
-    iter_eCY  =  eCY.begin();
-    MATZ.allocate(csound, 4*(Mmax+1));
-    iter_MATZ  =  MATZ.begin();
-    MATSY.allocate(csound, 4*(Mmax+1));
-    iter_MATSY  =  MATSY.begin();
-    qloss.allocate(csound, 4*(Mmax+1));
-    iter_qloss  =  qloss.begin();
-    wloss.allocate(csound, 4*(Mmax+1));
-    iter_wloss  =  wloss.begin();
-    qlossold.allocate(csound, 4*(Mmax+1));
-    iter_qlossold  =  qlossold.begin();
-    wlossold.allocate(csound, 4*(Mmax+1));
-    iter_wlossold  =  wlossold.begin();
-
-    sumZ1.allocate(csound, Mmax+1);
-    iter_sumZ1  =  sumZ1.begin();
-    factors_v.allocate(csound, Mmax+1);
-    iter_factors_v  =  factors_v.begin();
-    sumY1.allocate(csound, Mmax+1);
-    iter_sumY1  =  sumY1.begin();
-    factors_p.allocate(csound, Mmax+1);;
-    iter_factors_p  =  factors_p.begin();
-    sumZ2.allocate(csound, Mmax+1);;
-    iter_sumZ2  =  sumZ2.begin();
-    sumY2.allocate(csound, Mmax+1);;
-    iter_sumY2  =  sumY2.begin();
+    alloc_visco_memory(csound);
 
     // Init grid points with 0
     for (int m = 0; m<= M; m++) {
@@ -225,12 +152,14 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     rad_betaS  = rad_beta / c_user;
 
     // --------Compute loss arrays---------------------------------------------
+/*AHref
     compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
                         gy_tmp, cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, \
                         c_user, iter_eLZ, iter_eCY, iter_MATZ, iter_MATSY, \
                         iter_factors_v, iter_factors_p, Zmult, Ymult);
-
+*/
     // -------initialize loss state arrays w and q = 0-----------------------
+/*
     for (int m = 0; m <= M; m++) {
       for (int k = 0; k < 4; k++) {
         wloss[m*4+k] = 0;
@@ -239,6 +168,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         qlossold[m*4+k] = 0;
       }
     }
+    */
     Lold  =  L;
     Mold  =  M;
     dxold  =  dx;
@@ -270,19 +200,20 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         // -------- interpolate old grid status to new grid for each point--------
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
-        interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
-        interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
-        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
+    //AHref    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
+    //AHref    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
+    /*    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
                             cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, c_user, iter_eLZ, iter_eCY,
                             iter_MATZ, iter_MATSY, iter_factors_v, iter_factors_p, eta_user, Zmult, Ymult);
+    */
     } //Ending bracket for changed length
 
     int i  = 0;
     for (auto &o_sound : out_sound) {  // For each sample ..
         out_feedback[i] = pnew[0];  // Output pressure at tube begin for coupling
         vnew[0]  = in[i];  // Input external velocity at beginning of tube
-        update_visco_pointers(M, iter_sumZ1, iter_sumY1, iter_sumZ2, iter_sumY2, iter_eLZ, iter_eCY, iter_wlossold, iter_qlossold,
-                dx, dt, rho_user, iter_factors_v, iter_factors_p, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
+        update_visco_pointers(M,
+                dx, dt, rho_user, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
 
         // Boundary condition at tube end has radiation losses, damps traveling wave
         pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
@@ -292,6 +223,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
         o_sound = pnew[pickup_idx];
 
+/*
         // Updating losses at each grid point
         for (int m = 0; m <= M; m++) {
             for (int k = 0; k < 4; k++) {
@@ -301,12 +233,13 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
                                 + (pnew[m]-pold[m])*MATSY[m*4+k];
             }
         }
+*/
         // Copying p(n+1) to p(n) and v(n+1) to v(n),
         // i.e. new becomes old grid for next call
         std::copy(pnew.begin(), pnew.end(), pold.begin());
         std::copy(vnew.begin(), vnew.end(), vold.begin());
-        std::copy(wloss.begin(), wloss.end(), wlossold.begin());
-        std::copy(qloss.begin(), qloss.end(), qlossold.begin());
+        //AHref std::copy(wloss.begin(), wloss.end(), wlossold.begin());
+        //AHref std::copy(qloss.begin(), qloss.end(), qlossold.begin());
 
     }
     Lold = L;

@@ -30,17 +30,15 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
                MYFLT c = 3.4386e+02);
 
 //void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
+void alloc_visco_memory(csnd::Csound *csound);
 
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
                         const MYFLT& rho_user, const MYFLT *S,
                         const MYFLT *pold, const MYFLT *vold,
                         MYFLT *pnew, MYFLT *vnew);
 
-void update_visco_pointers(int M, MYFLT* sumZ1, MYFLT* sumY1, \
-			 MYFLT* sumZ2, MYFLT* sumY2, \
-			 MYFLT* eLZ, MYFLT* eCY, \
-			 MYFLT* wlossold, MYFLT* qlossold, MYFLT dx, \
-			 MYFLT dt, MYFLT rho, MYFLT* factors_v, MYFLT* factors_p, \
+void update_visco_pointers(int M, MYFLT dx, \
+			 MYFLT dt, MYFLT rho, \
 			 MYFLT* S, MYFLT* vold, MYFLT* pold, \
 			 MYFLT* vnew, MYFLT* pnew);
 

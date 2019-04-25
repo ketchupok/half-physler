@@ -32,6 +32,43 @@
 #include "tube.h"
 
 
+
+  csnd::AuxMem<MYFLT> eLZ;
+  csnd::AuxMem<MYFLT> eCY;
+  csnd::AuxMem<MYFLT> MATZ;
+  csnd::AuxMem<MYFLT> MATSY;
+  csnd::AuxMem<MYFLT> qloss;
+  csnd::AuxMem<MYFLT> wloss;
+  csnd::AuxMem<MYFLT> qlossold;
+  csnd::AuxMem<MYFLT> wlossold;
+
+  // iterators
+  csnd::AuxMem<MYFLT>::iterator iter_eLZ;
+  csnd::AuxMem<MYFLT>::iterator iter_eCY;
+  csnd::AuxMem<MYFLT>::iterator iter_MATZ;
+  csnd::AuxMem<MYFLT>::iterator iter_MATSY;
+  csnd::AuxMem<MYFLT>::iterator iter_qloss;
+  csnd::AuxMem<MYFLT>::iterator iter_wloss;
+  csnd::AuxMem<MYFLT>::iterator iter_qlossold;
+  csnd::AuxMem<MYFLT>::iterator iter_wlossold;
+
+  csnd::AuxMem<MYFLT> sumZ1;
+  csnd::AuxMem<MYFLT> factors_v;
+  csnd::AuxMem<MYFLT> sumY1;
+  csnd::AuxMem<MYFLT> factors_p;
+
+  csnd::AuxMem<MYFLT> sumZ2;
+  csnd::AuxMem<MYFLT> sumY2;
+
+  // iterators
+  csnd::AuxMem<MYFLT>::iterator iter_sumZ1;
+  csnd::AuxMem<MYFLT>::iterator iter_factors_v;
+  csnd::AuxMem<MYFLT>::iterator iter_sumY1;
+  csnd::AuxMem<MYFLT>::iterator iter_factors_p;
+  csnd::AuxMem<MYFLT>::iterator iter_sumZ2;
+  csnd::AuxMem<MYFLT>::iterator iter_sumY2;
+
+
 void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
     // TODO(AH) - replace weird arrays with [subscript]
   // INPUTS: (total) length
@@ -46,6 +83,43 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
   M[0]   = std::min(M[0], Mmax);
   dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
   }
+
+void alloc_visco_memory(csnd::Csound *csound) {
+    // -----Memory allocation for viscothermal loss calculations---------------
+    // Allocate loss arrays
+    // Note: To avoid matrices in aperf, eLZ[m][k]
+    // for k=4 (precision of Sebastian??)
+    // Arrays hold concatenated viscothermal loss factors instead.
+    eLZ.allocate(csound, 4*(Mmax+1));
+    iter_eLZ  =  eLZ.begin();
+    eCY.allocate(csound, 4*(Mmax+1));
+    iter_eCY  =  eCY.begin();
+    MATZ.allocate(csound, 4*(Mmax+1));
+    iter_MATZ  =  MATZ.begin();
+    MATSY.allocate(csound, 4*(Mmax+1));
+    iter_MATSY  =  MATSY.begin();
+    qloss.allocate(csound, 4*(Mmax+1));
+    iter_qloss  =  qloss.begin();
+    wloss.allocate(csound, 4*(Mmax+1));
+    iter_wloss  =  wloss.begin();
+    qlossold.allocate(csound, 4*(Mmax+1));
+    iter_qlossold  =  qlossold.begin();
+    wlossold.allocate(csound, 4*(Mmax+1));
+    iter_wlossold  =  wlossold.begin();
+
+    sumZ1.allocate(csound, Mmax+1);
+    iter_sumZ1  =  sumZ1.begin();
+    factors_v.allocate(csound, Mmax+1);
+    iter_factors_v  =  factors_v.begin();
+    sumY1.allocate(csound, Mmax+1);
+    iter_sumY1  =  sumY1.begin();
+    factors_p.allocate(csound, Mmax+1);;
+    iter_factors_p  =  factors_p.begin();
+    sumZ2.allocate(csound, Mmax+1);;
+    iter_sumZ2  =  sumZ2.begin();
+    sumY2.allocate(csound, Mmax+1);;
+    iter_sumY2  =  sumY2.begin();
+}
 
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
                 const MYFLT& c, const MYFLT& rho_user, \
@@ -65,11 +139,8 @@ void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
   vnew[0]  = 0;  // input flow is zero after the first sample
 }
 
-void update_visco_pointers(int M, MYFLT* sumZ1, MYFLT* sumY1, \
-    MYFLT* sumZ2, MYFLT* sumY2, \
-    MYFLT* eLZ, MYFLT* eCY, \
-    MYFLT* wlossold, MYFLT* qlossold, MYFLT dx, \
-    MYFLT dt, MYFLT rho, MYFLT* factors_v, MYFLT* factors_p, \
+void update_visco_pointers(int M, MYFLT dx, \
+    MYFLT dt, MYFLT rho, \
     MYFLT* S, MYFLT* vold, MYFLT* pold, \
     MYFLT* vnew, MYFLT* pnew) {
       for (int m = 0; m <=  M; m++) {  // Solve the first diff. eq. wrt vnew
