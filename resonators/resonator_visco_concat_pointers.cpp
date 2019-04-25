@@ -63,7 +63,6 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
 
   int M;             // Number of steps
   int Mold;          // Previous number of steps
-  int Mmax;          // Maximal number of steps
   MYFLT L;           // Length of the tube
   MYFLT Lold;        // Previous length of the tube
   MYFLT dt;          // Time grid
@@ -156,10 +155,9 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     Ymult             = 1;
 
     // ------Compute values for spatial and temporal grid-----------------------
-    Mmax = 400;
     fs = csound->sr();
     dt = 1.0/fs;
-    grid_init_visco(.2, dt, Mmax, &dx, &M, &L, c_user); // setup the grid for finite differences
+    grid_init(.2, dt, &dx, &M, &L);  // setup grid for finite difference
 
     // -----Allocate memory for grid state arrays------------------------------
     pold.allocate(csound, Mmax+1);
@@ -258,8 +256,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
 
     // ------------ Re-calculate the grid ---------------------------
     if(inargs[1]!=Lold) {  // new geometry calculations only when length changed
-        grid_init_visco(inargs[1], dt, Mmax, &dx, &M, &L, c_user);  // reset grid due to length changes
-
+        grid_init(L, dt, &dx, &M, &L);  // setup grid for finite difference
         for (int m = 0; m<= M; m++){  // new cross sectional area
           S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
                                        curve_type, m*dx, cone_lengths.len());

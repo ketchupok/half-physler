@@ -2,7 +2,7 @@
 <CsOptions>
 --opcode-lib=./opcodes_iwk.so
 -odac -b256 -B2048
--otest.wav
+;-otest.wav
 </CsOptions>
 
 <CsInstruments>

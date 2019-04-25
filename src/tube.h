@@ -29,7 +29,7 @@
 void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
                MYFLT c = 3.4386e+02);
 
-void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
+//void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
 
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
                         const MYFLT& rho_user, const MYFLT *S,

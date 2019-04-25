@@ -46,7 +46,7 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
   M[0]   = std::min(M[0], Mmax);
   dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
   }
-
+/*
   void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT * dx, int * M, MYFLT * L, MYFLT c)
   {
     // INPUTS: (total) length and maximum number of grid points
@@ -61,7 +61,7 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
     M[0]   = std::min(M[0],Mmax);
     dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
     }
-
+*/
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
                 const MYFLT& c, const MYFLT& rho_user, \
                 const MYFLT *S, \
