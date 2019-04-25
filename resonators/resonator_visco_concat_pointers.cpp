@@ -246,10 +246,9 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   }
 
   int aperf() { // calculate one audio block
-      csnd::AudioSig out_feedback(this, outargs(0));   // feedback output (M = 0)
-      csnd::AudioSig out_sound(this, outargs(1));   // sound out (at vari M != 0)
-      csnd::AudioSig in(this, inargs(0));              // Csound opcode in
-
+    csnd::AudioSig out_feedback(this, outargs(0));   // feedback output (M = 0)
+    csnd::AudioSig out_sound(this, outargs(1));   // sound out (at vari M != 0)
+    csnd::AudioSig in(this, inargs(0));              // Csound opcode in
     L = inargs[1];   // Length as input
     pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
     std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),cone_lengths.begin());
@@ -257,76 +256,57 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(6).begin(),inargs.vector_data<MYFLT>(6).end(),curve_type.begin());
 
-
-    if(inargs[1]!=Lold)
-      { //Ensures that new calculations are made only when L is changed
-
-        fs = csound->sr();
-        dt = 1.0/fs;
+    // ------------ Re-calculate the grid ---------------------------
+    if(inargs[1]!=Lold) {  // new geometry calculations only when length changed
         grid_init_visco(inargs[1], dt, Mmax, &dx, &M, &L, c_user);  // reset grid due to length changes
 
-	for (int m = 0; m<= M; m++){
-	  S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out, curve_type, m*dx, cone_lengths.len() );
-  }
+        for (int m = 0; m<= M; m++){  // new cross sectional area
+          S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
+                                       curve_type, m*dx, cone_lengths.len());
+        }
 
-	rad_alphaS = rad_alpha / sqrt(S[M]);
+        rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
 
-	//  interpolation(M, Mold, Lold, dx, dxold, pnew, pold);
-	//  interpolation(M, Mold, Lold, dx, dxold, vnew, vold);
-	//  interpolation_visco(M, Mold, Lold, dx, dxold, wloss, wlossold);
-	//  interpolation_visco(M, Mold, Lold, dx, dxold, qloss, qlossold);
-
-	//  compute_loss_arrays(M, S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
-  cy_tmp, sumZ1, sumY1, dt, rho, c, eLZ, eCY, MATZ, MATSY, factors_v, factors_p);
-
-// Why are both called here??
-    interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
-    interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
-    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
-    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
-
-    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
-                        cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, c_user, iter_eLZ, iter_eCY,
-                        iter_MATZ, iter_MATSY, iter_factors_v, iter_factors_p, eta_user, Zmult, Ymult);
-
-
-      } //Ending bracket of if(L!=Lold)
-
-
+        // -------- interpolate old grid status to new grid for each point--------
+        interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
+        interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
+        interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
+        interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
+        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
+                            cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, c_user, iter_eLZ, iter_eCY,
+                            iter_MATZ, iter_MATSY, iter_factors_v, iter_factors_p, eta_user, Zmult, Ymult);
+    } //Ending bracket for changed length
 
     int i  = 0;
-    for (auto &o_sound : out_sound) { // for each sample ..
-
-      //      update_visco(M, sumZ1, sumY1, sumZ2, sumY2, eLZ, eCY, wlossold, qlossold, \
-      // dx, dt, rho, factors_v, factors_p, S, vold, pold, vnew, pnew);
-
-        out_feedback[i] = pnew[0];
-        vnew[0]  = in[i]; //Put comment here
+    for (auto &o_sound : out_sound) {  // For each sample ..
+        out_feedback[i] = pnew[0];  // Output pressure at tube begin for coupling
+        vnew[0]  = in[i];  // Input external velocity at beginning of tube
         update_visco_pointers(M, iter_sumZ1, iter_sumY1, iter_sumZ2, iter_sumY2, iter_eLZ, iter_eCY, iter_wlossold, iter_qlossold,
                 dx, dt, rho_user, iter_factors_v, iter_factors_p, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
 
+        // Boundary condition at tube end has radiation losses, damps traveling wave
         pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
         i++;
+
+        // sound output at variable grid point
         int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
-        //printf("%f\n", pickup_pos);
         o_sound = pnew[pickup_idx];
 
-
-      // Updating arrays
-      for (int m = 0; m <= M; m++) {
-        for (int k = 0; k < 4; k++) {
-            wloss[m*4+k]  =  wlossold[m*4+k]*eLZ[m*4+k]
-                            + (vnew[m]-vold[m])*MATZ[m*4+k];
-            qloss[m*4+k]  =  qlossold[m*4+k]*eCY[m*4+k]
-                            + (pnew[m]-pold[m])*MATSY[m*4+k];
+        // Updating losses at each grid point
+        for (int m = 0; m <= M; m++) {
+            for (int k = 0; k < 4; k++) {
+                wloss[m*4+k]  =  wlossold[m*4+k]*eLZ[m*4+k]
+                                + (vnew[m]-vold[m])*MATZ[m*4+k];
+                qloss[m*4+k]  =  qlossold[m*4+k]*eCY[m*4+k]
+                                + (pnew[m]-pold[m])*MATSY[m*4+k];
+            }
         }
-      }
-      std::copy(pnew.begin(), pnew.end(), pold.begin());
-      std::copy(vnew.begin(), vnew.end(), vold.begin());
-      std::copy(wloss.begin(), wloss.end(), wlossold.begin());
-      std::copy(qloss.begin(), qloss.end(), qlossold.begin());
-
-
+        // Copying p(n+1) to p(n) and v(n+1) to v(n),
+        // i.e. new becomes old grid for next call
+        std::copy(pnew.begin(), pnew.end(), pold.begin());
+        std::copy(vnew.begin(), vnew.end(), vold.begin());
+        std::copy(wloss.begin(), wloss.end(), wlossold.begin());
+        std::copy(qloss.begin(), qloss.end(), qlossold.begin());
 
     }
     Lold = L;

@@ -153,7 +153,7 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
       interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
       interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
       rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
-  }  // Ending bracket of changed geometry
+     }  // Ending bracket of changed geometry
 
     int i = 0;
     for (auto &o_sound : out_sound) {  // For each sample ..
