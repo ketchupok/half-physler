@@ -101,51 +101,75 @@ MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope) {
     return area;
 }
 
-MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, csnd::AuxMem<MYFLT> radii_in, csnd::AuxMem<MYFLT> radii_out, csnd::AuxMem<MYFLT> curve_type, MYFLT x, int size){
-  MYFLT prelength=0;
-  int where;
-  int type;
+MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, \
+                                csnd::AuxMem<MYFLT> radii_in,    \
+                                csnd::AuxMem<MYFLT> radii_out,   \
+                                csnd::AuxMem<MYFLT> curve_type,  \
+                                MYFLT grid_pos, int num_segs) {
+    /* complex geometries are given as segments by the user
+        cross sectional areas for each are calculated according to these geometries
+        jumps between segment radii can be interpolated using three different algorithms
+        a) linear, b) exponential, c) parabolic
+    */
+
+  MYFLT prelength = 0.0;  // tube length until the current segment
+  int seg = 0;
   MYFLT area;
-  for(int i=0; i< size;i++){
-    prelength+=cone_lengths[i]; //The total length is necessary to determine m and dx
-    if((x <=  prelength) || (i == size-1) ){ // due to round off error, x might exceed total length in the last segment. || (i == size-1) fixes that.
-      where = i;            //Location of current m*dx, ex in the 1st cone, 2nd cone, ...
+
+  // determine in which segment we are in, set prelength to end of last segment
+  for (int i = 0; i < num_segs; i++) {
+    prelength += cone_lengths[i];  // sum up total length to determine m and dx
+    if ((grid_pos <=  prelength) || (i == num_segs-1) ){ // due to round off error, x might exceed total length in the last segment. || (i == size-1) fixes that.
+      seg = i;      // Location of current m*dx, 1st cone, 2nd segment.
       prelength -= cone_lengths[i];
-      //Here, Ltot is set to prelength, which is the total length of the tube before the current segment
       break;
     }
-
   }
-  type = int(curve_type[where]);
-  /*These two lines are necessary to convert the curve type
-  from MYFLT to int, so that we can use it in switch*/
-
-  switch(type){
-    case 1: //1 for linear approximation
-      area = linear_approx(radii_in[where], radii_out[where], x, prelength, cone_lengths[where]);
+/*
+    //printf("prelength in ini: %f\n", prelength);
+  while (grid_pos >= prelength  || (seg == num_segs-1)) {
+      prelength +=cone_lengths[seg];
+      seg++;
+      printf("seg: %d\n", seg);
+      //printf("prelength in for loop: %f\n", prelength);
+  }
+  prelength = prelength - cone_lengths[seg];  // set back to end of last segment
+  seg = seg - 1;
+*/
+printf("prelength before switch: %f\n", prelength);
+  switch (int(curve_type[seg])) {  // converting MYFLT to int for switch()
+    case 1:  // 1 for linear approximation
+      area = linear_approx(radii_in[seg], radii_out[seg], grid_pos,  \
+                            prelength, cone_lengths[seg]);
       break;
-    case 2: //2 for parabolic approximation
-      area = parabolic_approx(radii_in[where], radii_out[where], x, prelength, cone_lengths[where]);
+    case 2:  // 2 for parabolic approximation
+      area = parabolic_approx(radii_in[seg], radii_out[seg], grid_pos,  \
+                                prelength, cone_lengths[seg]);
       break;
-    case 3: //3 for exponential approximation
-      area = exponential_approx(radii_in[where], radii_out[where], x, prelength, cone_lengths[where]);
+    case 3:  // 3 for exponential approximation
+      area = exponential_approx(radii_in[seg], radii_out[seg], grid_pos,  \
+                                prelength, cone_lengths[seg]);
       break;
   }
+  printf("area: %f\n", area);
   return area;
 }
 
-MYFLT linear_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length){
-  /*x is the current position(m*dx), prelength is the length of the total tube
-  up until the current segment, length is the length of the current segment*/
+MYFLT linear_approx(MYFLT radius_in, MYFLT radius_out, MYFLT grid_pos,  \
+                    MYFLT prelength, MYFLT seg_length) {
+  /*grid_pos is the current position(m*dx), prelength is the length of the total tube
+  up until the current segment, seg_length is the length of the current segment*/
     MYFLT area;
     MYFLT r;
-    if(length==0){
-        r=radius_in;
+    if (seg_length == 0) {  // TODO(AH): how to deal with negative numbers?? <=
+        r = radius_in;
+    } else {
+        MYFLT distance_to_seg_begin = grid_pos - prelength;
+        MYFLT radius_diff_per_meter = (radius_out - radius_in) / seg_length;
+        MYFLT radius_change = distance_to_seg_begin * radius_diff_per_meter;
+        r = radius_in + radius_change;
     }
-    else{
-        r=radius_in+(x-prelength)*(radius_out-radius_in)/length;
-    }
-    area=r*r*PI;
+    area = r * r * PI;
     return area;
 }
 
@@ -206,7 +230,6 @@ void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) // TODO: change to p
     //    return r;
   }
 
-
   int i = 1;
   while (radii[i] < rad)
     {
@@ -217,40 +240,14 @@ void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) // TODO: change to p
   r[1] = coeff[1][i-1]*(rad - radii[i])/(radii[i-1]-radii[i]) + coeff[1][i]*(radii[i-1]-rad)/(radii[i-1]-radii[i]);
   r[2] = coeff[2][i-1]*(rad - radii[i])/(radii[i-1]-radii[i]) + coeff[2][i]*(radii[i-1]-rad)/(radii[i-1]-radii[i]);
   r[3] = coeff[3][i-1]*(rad - radii[i])/(radii[i-1]-radii[i]) + coeff[3][i]*(radii[i-1]-rad)/(radii[i-1]-radii[i]);
-
   //  return r;
 
 }
 
-MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
-  MYFLT K = r*sqrt(rho/eta);
-  MYFLT out  =  8*rho/(K*K);
-
-  return out;
-};
-
-/* AH test if still needed, otheriwse remove
-void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
-                csnd::AuxMem<MYFLT> knew, csnd::AuxMem<MYFLT> kold){
-  MYFLT x, xl, xr;
-  int m1, m2;
-  for (int m = 0; m<=std::min(M, int(floor(Lold/dx))); m++) {
-    m1 = floor(m*(dx/dxold));
-    m2 = m1 + 1;  // Equivalent to m2 = ceil(m*dx/dxold)
-
-    xl = m1*dxold;
-    xr = m2*dxold;
-    x  = m*dx;
-    kold[m] = knew[m1]*((xr - x)/(xr - xl)) + knew[m2]*((x-xl)/(xr-xl));
-  }
 
 
-  for (int m = std::min(M, int(floor(Lold/dx)))+1; m<= M; m++) {
-    //    kold[m] = kold[std::min(M,int(floor(Lold/dx)))];
-    kold[m] = knew[Mold];
-  }
-}
-*/
+
+
 void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,
                         MYFLT dxold, MYFLT *knew, MYFLT *kold) {
   MYFLT x, xl, xr;
@@ -295,6 +292,13 @@ void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT d
   }
 }
 
+
+MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
+  MYFLT K = r*sqrt(rho/eta);
+  MYFLT out  =  8*rho/(K*K);
+
+  return out;
+};
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
 			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \

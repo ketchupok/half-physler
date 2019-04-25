@@ -127,11 +127,11 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> radii_out;
   csnd::AuxMem<MYFLT> curve_type;
 
-  MYFLT x;            //  Position for m*dx
-  MYFLT xl;           //  Position for m1*dxold
-  MYFLT xr;           //  Position for m2*dxold
-  int m1;
-  int m2;
+ // MYFLT x;            //  Position for m*dx
+  //MYFLT xl;           //  Position for m1*dxold
+  //MYFLT xr;           //  Position for m2*dxold
+  //int m1;
+  //int m2;
 
 
   int init() {
@@ -157,9 +157,10 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     // ------Compute values for spatial and temporal grid-----------------------
     fs = csound->sr();
     dt = 1.0/fs;
-    grid_init(.2, dt, &dx, &M, &L);  // setup grid for finite difference
+    grid_init(L, dt, &dx, &M, &L);  // setup grid for finite difference
 
     // -----Allocate memory for grid state arrays------------------------------
+    // using Mmax instead of M, allows 'Length' changes w/o new alloc in aperf()
     pold.allocate(csound, Mmax+1);
     pnew.allocate(csound, Mmax+1);
     vold.allocate(csound, Mmax+1);
@@ -207,13 +208,15 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     sumY2.allocate(csound, Mmax+1);;
     iter_sumY2  =  sumY2.begin();
 
-    // Init grid
-    for (int m = 0; m<= M; m++){
+    // Init grid points with 0
+    for (int m = 0; m<= M; m++) {
       pold[m] = 0;
       vold[m] = 0;
       pnew[m] = 0;
       vnew[m] = 0;
-      // Setting Cross sectional area of tube (see ./src/tube.cpp)
+      MYFLT mdx = m*dx;
+      printf("point=%d, pos = %f\n", m, mdx);
+      // Setting Cross sectional area for each grid point (see ./src/tube.cpp)
       S[m]    = cross_area_concatenation(cone_lengths, radii_in, radii_out, \
                                          curve_type, m*dx, cone_lengths.len() );
     }

@@ -56,18 +56,13 @@ MYFLT exponential_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prele
 
 void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r); // TODO: change to pointer
 
-MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
-
-/* AH: remove??
-void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
-                   csnd::AuxMem<MYFLT> knew, csnd::AuxMem<MYFLT> kold);
-*/
 void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold,
                             MYFLT *knew, MYFLT *kold);
 
 void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
             MYFLT* klossnew, MYFLT*  klossold);
 
+MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
 			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \
