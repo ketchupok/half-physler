@@ -1,4 +1,5 @@
 const.o
 opcodes_iwk.so
 tube.o
+*.wav
 **/.DS_Store
