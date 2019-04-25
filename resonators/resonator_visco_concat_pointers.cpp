@@ -87,7 +87,6 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> curve_type;
 
   // viscothermal loss variables
-
   MYFLT rz_tmp[4];
   MYFLT lz_tmp[4];
   MYFLT gy_tmp[4];
@@ -189,10 +188,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         // -------- interpolate old grid status to new grid for each point--------
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
-
-        // AH Problem, as same function called with diff varis.. qloss and wloss
-        //AHref interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
-        //AHref interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
+        interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
         compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
                             gy_tmp, cy_tmp, dt, rho_user, \
                             c_user, Zmult, Ymult);
@@ -218,9 +214,6 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         // i.e. new becomes old grid for next call
         std::copy(pnew.begin(), pnew.end(), pold.begin());
         std::copy(vnew.begin(), vnew.end(), vold.begin());
-        //AHref std::copy(wloss.begin(), wloss.end(), wlossold.begin());
-        //AHref std::copy(qloss.begin(), qloss.end(), qlossold.begin());
-
     }
     Lold = L;
     Mold = M;

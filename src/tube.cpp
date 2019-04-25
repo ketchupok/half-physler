@@ -185,6 +185,8 @@ void update_losses(int M, MYFLT* vold, MYFLT* pold, MYFLT* vnew, MYFLT* pnew) {
                                 + (pnew[m]-pold[m])*MATSY[m*4+k];
             }
         }
+        std::copy(wloss.begin(), wloss.end(), wlossold.begin());
+        std::copy(qloss.begin(), qloss.end(), qlossold.begin());
 }
 
 MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope) {
@@ -382,6 +384,12 @@ void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,  \
       }
     }
   }
+}
+
+
+void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold) {
+    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
+    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
 }
 
 
