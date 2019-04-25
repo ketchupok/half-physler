@@ -32,6 +32,8 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
 //void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
 void alloc_visco_memory(csnd::Csound *csound);
 
+void init_loss_state_array(int M);
+
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
                         const MYFLT& rho_user, const MYFLT *S,
                         const MYFLT *pold, const MYFLT *vold,
@@ -41,6 +43,8 @@ void update_visco_pointers(int M, MYFLT dx, \
 			 MYFLT dt, MYFLT rho, \
 			 MYFLT* S, MYFLT* vold, MYFLT* pold, \
 			 MYFLT* vnew, MYFLT* pnew);
+
+void update_losses(int M, MYFLT* vold, MYFLT* pold, MYFLT* vnew, MYFLT* pnew);
 
 MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope);
 
@@ -64,12 +68,8 @@ MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
 
 void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
 			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100], MYFLT rz_tmp[], \
-			 MYFLT lz_tmp[], MYFLT gy_tmp[], MYFLT cy_tmp[], MYFLT* sumZ1, \
-			 MYFLT* sumY1, MYFLT dt, MYFLT rho, MYFLT c, \
-			 MYFLT* eLZ, MYFLT* eCY, \
-			 MYFLT* MATZ, MYFLT* MATSY, \
-			 MYFLT* factors_v, MYFLT* factors_p, MYFLT eta = 1.8200e-05, \
-             MYFLT Zmult = 1, MYFLT Ymult = 1);
+			 MYFLT lz_tmp[], MYFLT gy_tmp[], MYFLT cy_tmp[], MYFLT dt, MYFLT rho, MYFLT c, \
+       MYFLT Zmult = 1, MYFLT Ymult = 1);
 
 
 

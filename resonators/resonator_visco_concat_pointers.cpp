@@ -152,23 +152,12 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     rad_betaS  = rad_beta / c_user;
 
     // --------Compute loss arrays---------------------------------------------
-/*AHref
+
     compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
-                        gy_tmp, cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, \
-                        c_user, iter_eLZ, iter_eCY, iter_MATZ, iter_MATSY, \
-                        iter_factors_v, iter_factors_p, Zmult, Ymult);
-*/
-    // -------initialize loss state arrays w and q = 0-----------------------
-/*
-    for (int m = 0; m <= M; m++) {
-      for (int k = 0; k < 4; k++) {
-        wloss[m*4+k] = 0;
-        qloss[m*4+k] = 0;
-        wlossold[m*4+k] = 0;
-        qlossold[m*4+k] = 0;
-      }
-    }
-    */
+                        gy_tmp, cy_tmp, dt, rho_user, \
+                        c_user, Zmult, Ymult);
+
+    init_loss_state_array(M);
     Lold  =  L;
     Mold  =  M;
     dxold  =  dx;
@@ -200,12 +189,13 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         // -------- interpolate old grid status to new grid for each point--------
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
-    //AHref    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
-    //AHref    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
-    /*    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp, gy_tmp, \
-                            cy_tmp, iter_sumZ1, iter_sumY1, dt, rho_user, c_user, iter_eLZ, iter_eCY,
-                            iter_MATZ, iter_MATSY, iter_factors_v, iter_factors_p, eta_user, Zmult, Ymult);
-    */
+
+        // AH Problem, as same function called with diff varis.. qloss and wloss
+        //AHref interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
+        //AHref interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
+        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, rz_tmp, lz_tmp,\
+                            gy_tmp, cy_tmp, dt, rho_user, \
+                            c_user, Zmult, Ymult);
     } //Ending bracket for changed length
 
     int i  = 0;
@@ -223,17 +213,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
         o_sound = pnew[pickup_idx];
 
-/*
-        // Updating losses at each grid point
-        for (int m = 0; m <= M; m++) {
-            for (int k = 0; k < 4; k++) {
-                wloss[m*4+k]  =  wlossold[m*4+k]*eLZ[m*4+k]
-                                + (vnew[m]-vold[m])*MATZ[m*4+k];
-                qloss[m*4+k]  =  qlossold[m*4+k]*eCY[m*4+k]
-                                + (pnew[m]-pold[m])*MATSY[m*4+k];
-            }
-        }
-*/
+        update_losses(M, iter_vold, iter_pold, iter_vnew, iter_pnew);
         // Copying p(n+1) to p(n) and v(n+1) to v(n),
         // i.e. new becomes old grid for next call
         std::copy(pnew.begin(), pnew.end(), pold.begin());

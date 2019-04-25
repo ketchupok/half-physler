@@ -121,6 +121,19 @@ void alloc_visco_memory(csnd::Csound *csound) {
     iter_sumY2  =  sumY2.begin();
 }
 
+void init_loss_state_array(int M) {
+    // -------initialize loss state arrays w and q = 0-----------------------
+// was after compute_loss_arrays_pointers()
+    for (int m = 0; m <= M; m++) {
+      for (int k = 0; k < 4; k++) {
+        wloss[m*4+k] = 0;
+        qloss[m*4+k] = 0;
+        wlossold[m*4+k] = 0;
+        qlossold[m*4+k] = 0;
+      }
+    }
+}
+
 void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
                 const MYFLT& c, const MYFLT& rho_user, \
                 const MYFLT *S, \
@@ -162,6 +175,17 @@ void update_visco_pointers(int M, MYFLT dx, \
       }
 }
 
+void update_losses(int M, MYFLT* vold, MYFLT* pold, MYFLT* vnew, MYFLT* pnew) {
+        // Updating losses at each grid point
+        for (int m = 0; m <= M; m++) {
+            for (int k = 0; k < 4; k++) {
+                wloss[m*4+k]  =  wlossold[m*4+k]*eLZ[m*4+k]
+                                + (vnew[m]-vold[m])*MATZ[m*4+k];
+                qloss[m*4+k]  =  qlossold[m*4+k]*eCY[m*4+k]
+                                + (pnew[m]-pold[m])*MATSY[m*4+k];
+            }
+        }
+}
 
 MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope) {
   /*x is the current position(m*dx), prelength is the length of the total tube
@@ -373,11 +397,7 @@ void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
                                 MYFLT LsZ[4][100], MYFLT GsY[4][100], \
                                 MYFLT CsY[4][100], MYFLT rz_tmp[], \
                                 MYFLT lz_tmp[], MYFLT gy_tmp[],  \
-                                MYFLT cy_tmp[], MYFLT* sumZ1, \
-                                MYFLT* sumY1, MYFLT dt, MYFLT rho, MYFLT c, \
-                                MYFLT* eLZ, MYFLT* eCY, \
-                                MYFLT* MATZ, MYFLT* MATSY, \
-                                MYFLT* factors_v, MYFLT* factors_p, MYFLT eta, \
+                                MYFLT cy_tmp[], MYFLT dt, MYFLT rho, MYFLT c, \
                                 MYFLT Zmult, MYFLT Ymult) {
   for (int m = 0; m <= M; m++) {
     MYFLT r  = sqrt(S[m]/PI);
