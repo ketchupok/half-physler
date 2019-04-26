@@ -178,6 +178,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         }
 
         rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
+        //TODO(Seb): Why no rad_betaS??
 
         // -------- interpolate old grid status to new grid for each point--------
         interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);

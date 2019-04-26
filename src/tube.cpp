@@ -158,9 +158,9 @@ void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
 }
 
 void update_visco_pointers(int M, MYFLT dx, \
-    MYFLT dt, MYFLT rho, \
-    MYFLT* S, MYFLT* vold, MYFLT* pold, \
-    MYFLT* vnew, MYFLT* pnew) {
+                        MYFLT dt, MYFLT rho, \
+                        MYFLT* S, MYFLT* vold, MYFLT* pold, \
+                        MYFLT* vnew, MYFLT* pnew) {
       for (int m = 0; m <=  M; m++) {  // Solve the first diff. eq. wrt vnew
         sumZ2[m]  =  0;
         sumY2[m]  =  0;
@@ -384,7 +384,6 @@ void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,  \
 
     for (int m = std::min(M,int(floor(Lold/dx)))+1; m<= M; m++){
       for (int k = 0; k < 4; k++){
-	//        klossold[m][k] = klossold[std::min(M,int(floor(Lold/dx)))][k];
         klossold[m*4+k] = klossnew[Mold*4+k];
       }
     }
@@ -399,7 +398,7 @@ void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxo
 
 
 MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
-    // TODO(Seb): please add comment
+    // constant R0 term in formular 6 (ISMA)
   MYFLT K = r*sqrt(rho/eta);
   MYFLT out  =  8*rho/(K*K);
 
@@ -412,6 +411,7 @@ void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
                                 MYFLT Zmult, MYFLT Ymult) {
   for (int m = 0; m <= M; m++) {
     MYFLT r  = sqrt(S[m]/PI);
+    // read out constants or interpolate if radius inbetween
     interp_loss(r, RsZ, rz_tmp);
     interp_loss(r, LsZ, lz_tmp);
     interp_loss(r, GsY, gy_tmp);
@@ -430,7 +430,7 @@ void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
       MATSY[m*4+k] = Ymult*S[m]*gy_tmp[k] * exp(-cy_tmp[k]*dt*.5);
     }
 
-    factors_v[m] = rho/dt + sumZ1[m] + R0Z(r, rho, eta);
-    factors_p[m] = S[m]/(rho*c*c*dt) + sumY1[m];
+    factors_v[m] = rho/dt + sumZ1[m] + R0Z(r, rho, eta);  // formular 16 in ISMA
+    factors_p[m] = S[m]/(rho*c*c*dt) + sumY1[m];          // formular 17
   }
 }
