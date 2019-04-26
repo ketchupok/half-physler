@@ -89,11 +89,11 @@ void grid_init(MYFLT Len, MYFLT dt, MYFLT * dx, int * M, MYFLT * L, MYFLT c) {
   dx[0]  = L[0] / (M[0]);  // Guarantees both conditions
   }
 
-void alloc_visco_memory(csnd::Csound *csound) {
+void alloc_visco_memory(csnd::Csound* csound) {
     // -----Memory allocation for viscothermal loss calculations---------------
     // Allocate loss arrays
     // Note: To avoid matrices in aperf, eLZ[m][k]
-    // for k=4 (precision of Sebastian??)
+    // for k=4 (Bilbao Harrison, 2016)
     // Arrays hold concatenated viscothermal loss factors instead.
     eLZ.allocate(csound, 4*(Mmax+1));
     iter_eLZ  =  eLZ.begin();
@@ -128,7 +128,7 @@ void alloc_visco_memory(csnd::Csound *csound) {
 
 void init_loss_state_array(int M) {
     // -------initialize loss state arrays w and q = 0-----------------------
-// was after compute_loss_arrays_pointers()
+// was after compute_loss_arrays()
     for (int m = 0; m <= M; m++) {
       for (int k = 0; k < 4; k++) {
         wloss[m*4+k] = 0;
@@ -139,7 +139,7 @@ void init_loss_state_array(int M) {
     }
 }
 
-void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
+void update_vp(int M, const MYFLT& dt, const MYFLT& dx, \
                 const MYFLT& c, const MYFLT& rho_user, \
                 const MYFLT *S, \
                 const MYFLT *pold, const MYFLT *vold, \
@@ -157,7 +157,7 @@ void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, \
   vnew[0]  = 0;  // input flow is zero after the first sample
 }
 
-void update_visco_pointers(int M, MYFLT dx, \
+void update_visco(int M, MYFLT dx, \
                         MYFLT dt, MYFLT rho, \
                         MYFLT* S, MYFLT* vold, MYFLT* pold, \
                         MYFLT* vnew, MYFLT* pnew) {
@@ -347,7 +347,7 @@ void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT * r) {
 
 
 
-void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,
+void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx,
                         MYFLT dxold, MYFLT *knew, MYFLT *kold) {
   MYFLT x, xl, xr;
   int m1, m2;
@@ -368,7 +368,7 @@ void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,
   }
 }
 
-void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,  \
+void interpolation_visco(int M, int Mold, MYFLT Lold, MYFLT dx,  \
                             MYFLT dxold, MYFLT* klossnew, MYFLT* klossold) {
   MYFLT x, xl, xr;
   int m1, m2;
@@ -392,8 +392,8 @@ void interpolation_visco_pointers(int M, int Mold, MYFLT Lold, MYFLT dx,  \
 
 
 void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold) {
-    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
-    interpolation_visco_pointers(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
+    interpolation_visco(M, Mold, Lold, dx, dxold, iter_wloss, iter_wlossold);
+    interpolation_visco(M, Mold, Lold, dx, dxold, iter_qloss, iter_qlossold);
 }
 
 
@@ -405,7 +405,7 @@ MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
   return out;
 };
 
-void compute_loss_arrays_pointers(int M, MYFLT* S, MYFLT RsZ[4][100], \
+void compute_loss_arrays(int M, MYFLT* S, MYFLT RsZ[4][100], \
                                 MYFLT LsZ[4][100], MYFLT GsY[4][100], \
                                 MYFLT CsY[4][100], MYFLT dt, MYFLT rho, MYFLT c, \
                                 MYFLT Zmult, MYFLT Ymult) {

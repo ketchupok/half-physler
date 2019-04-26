@@ -121,7 +121,7 @@ instr 6
     kLength randomh .7, .5, 4
     ;a2 tube_resonator 0.03*aImpulse, kLength, icone_lengths, iradii_in, iradii_out, icurve_type
     a2 init 0
-    prints "PLAYING Resonator_Visco_Concat_Pointers\n"
+    prints "PLAYING Resonator_Visco_Concat\n"
     out a2
 endin
 

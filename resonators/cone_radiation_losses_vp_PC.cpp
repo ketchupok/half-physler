@@ -1,5 +1,5 @@
 /*
-  file: resonators/cone_radiation_losses_vp_pointers_PC.cpp
+  file: resonators/cone_radiation_losses_vp_PC.cpp
   opcode-name: halfphysler
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
@@ -55,7 +55,7 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> vnew;     // velocity value at (n+1)th time grid
   csnd::AuxMem<MYFLT> S;        // Cross sectional area
 
-  // iterators to be passed to update_vp_pointers()
+  // iterators to be passed to update_vp()
   csnd::AuxMem<MYFLT>::iterator iter_pold;
   csnd::AuxMem<MYFLT>::iterator iter_vold;
   csnd::AuxMem<MYFLT>::iterator iter_pnew;
@@ -150,8 +150,8 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
       }
 
       // interpolate old grid status to new grid for each point
-      interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
-      interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
+      interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
+      interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
       rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
      }  // Ending bracket of changed geometry
 
@@ -165,7 +165,7 @@ struct Cone_Radiation_Losses : csnd::Plugin<2, 7> {
      // sound card delayed out_feeback
      // if latency based low-freq noise occures compensate in csound with hpf
      vnew[0] = in[i];
-     update_vp_pointers(M, dt, dx, c, (mult_rho * rho), iter_S, iter_pold, iter_vold,
+     update_vp(M, dt, dx, c, (mult_rho * rho), iter_S, iter_pold, iter_vold,
                                                    iter_pnew, iter_vnew);
      // Boundary condition at tube end has radiation losses, damps traveling wave
      pnew[M]  = (pold[M]*rad_betaS/(mult_rho * rho) + vnew[M]-vold[M]) /

@@ -28,7 +28,7 @@ instr 6
     kLength init .6
     kPick_Pos init 0.0
     aFeedback, aSound tube_resonator 0.005*aImpulse, kLength, kPick_Pos, icone_lengths, iradii_in, iradii_out, icurve_type
-    prints "PLAYING Resonator_Visco_Concat_Pointers\n"
+    prints "PLAYING Resonator_Visco_Concat\n"
     out aSound
 endin
 

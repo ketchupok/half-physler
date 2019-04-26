@@ -1,5 +1,5 @@
 /*
-  file: resonators/resonator_visco_concat_pointers.cpp
+  file: resonators/resonator_visco_concat.cpp
   opcode-name: tube_resonator
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
@@ -40,7 +40,7 @@
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
 
-struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
+struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
@@ -54,7 +54,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> vnew;  // velocity value at (n+1)th time grid
   csnd::AuxMem<MYFLT> S;     // Cross sectional area
 
-  // iterators to be passed to update_vp_pointers()
+  // iterators to be passed to update_vp()
   csnd::AuxMem<MYFLT>::iterator iter_pold;
   csnd::AuxMem<MYFLT>::iterator iter_vold;
   csnd::AuxMem<MYFLT>::iterator iter_pnew;
@@ -147,7 +147,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
 
     // --------Compute loss arrays---------------------------------------------
 
-    compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
+    compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
                         c_user, Zmult, Ymult);
 
     init_loss_state_array(M);
@@ -181,10 +181,10 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
         //TODO(Seb): Why no rad_betaS??
 
         // -------- interpolate old grid status to new grid for each point--------
-        interpolation_pointers(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
-        interpolation_pointers(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
+        interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
+        interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
         interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
-        compute_loss_arrays_pointers(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
+        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
                             c_user, Zmult, Ymult);
     } //Ending bracket for changed length
 
@@ -192,7 +192,7 @@ struct Resonator_Visco_Concat_Pointers : csnd::Plugin<2, 7> {
     for (auto &o_sound : out_sound) {  // For each sample ..
         out_feedback[i] = pnew[0];  // Output pressure at tube begin for coupling
         vnew[0]  = in[i];  // Input external velocity at beginning of tube
-        update_visco_pointers(M,
+        update_visco(M,
                 dx, dt, rho_user, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
 
         // Boundary condition at tube end has radiation losses, damps traveling wave
