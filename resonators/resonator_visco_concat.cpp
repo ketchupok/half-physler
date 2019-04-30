@@ -40,7 +40,7 @@
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
 
-struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
+struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
@@ -72,11 +72,14 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
   MYFLT dxold;       // Previous step size
   MYFLT rad_alphaS;  // Radiation parameter alpha
   MYFLT rad_betaS;   // Radiation parameter beta
+  MYFLT mult_alpha;  // user_multiplier for radiation losses
 
   // -------------------------------
-  MYFLT c_user;      //   = 3.4386e+02; // speed of sound
-  MYFLT rho_user;    // = 1.2000e+00; // density
-  MYFLT eta_user;    // = 1.8200e-05; // air viscosity
+  //MYFLT c_user;      //   = 3.4386e+02; // speed of sound
+  //MYFLT eta_user;    // = 1.8200e-05; // air viscosity
+  //MYFLT rho_user;    // = 1.2000e+00; // density
+
+  MYFLT mult_rho;     // user_multiplier for density
   MYFLT Zmult;       // specific impedance multiplier
   MYFLT Ymult;       // shunt admittance multiplier
   MYFLT pickup_pos;  // user defined pickup position in tube
@@ -91,35 +94,44 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> allGeoSettings_new;
   csnd::AuxMem<MYFLT> allGeoSettings_old;
   bool geometryChanged;
-  bool computeVisco;
+  int computeVisco;
 
 
   int init() {
-    L          = inargs[1];  // Length as input
-    pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
+    // --------------  user inputs --------------------------------
+    L          = 0.1;  // inargs[1] Length as input
+    pickup_pos = 0.5;  // inargs[2] TODO(AH): relative pickup position M/2 to M
+    mult_alpha = 1.0;  // inargs[3] tube end reflection coefficient (radiation)
+    mult_rho   = 1.0;  // inargs[4] density coefficient
 
+    // it is currently (Apr. 2019) discussed in the Csnd-dev list,
+    // if k-time array size changes are allowed or not
+    // if not, we could set maxGeoSegments = (1 + 4*cone_lengths.len())
     maxGeoSegments = 25;      // Gemoetry can have up to 25 segments
     cone_lengths.allocate(csound, maxGeoSegments);
     radii_in.allocate(csound, maxGeoSegments);
     radii_out.allocate(csound, maxGeoSegments);
     curve_type.allocate(csound, maxGeoSegments);
 
+    // inargs[5..8] copy user provided geometry to MYFLT arrays
+    std::copy(inargs.vector_data<MYFLT>(5).begin(),
+              inargs.vector_data<MYFLT>(5).end(), cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(6).begin(),
+              inargs.vector_data<MYFLT>(6).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(7).begin(),
+              inargs.vector_data<MYFLT>(7).end(), radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(8).begin(),
+              inargs.vector_data<MYFLT>(8).end(), curve_type.begin());
+    // TODO(AH): How to make this optional?
+    // computeVisco = inargs[9];  // save CPU
+     computeVisco = true;
+
+
+    // copy all geometry into one long array, for comparison if changed
     allGeoSettings_new.allocate(csound, 1 + (maxGeoSegments*4));
     allGeoSettings_old.allocate(csound, 1 + (maxGeoSegments*4));
     geometryChanged = false;
-    computeVisco = true;
 
-    // copy user provided geometry to MYFLT arrays
-    std::copy(inargs.vector_data<MYFLT>(3).begin(),
-            inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(),
-            inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(5).begin(),
-            inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(6).begin(),
-            inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
-
-// copy all geometry into one long array, for comparison if changed
     allGeoSettings_new[0] = L;
     std::copy(cone_lengths.begin(), cone_lengths.end(),
                 allGeoSettings_new.begin()+1);
@@ -130,9 +142,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     std::copy(curve_type.begin(), curve_type.end(),
                 allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
 
-    c_user            = 3.4386e+02;  // u-m speed of sound
-    rho_user          = 1.2000e+00;  // u-m density
-    eta_user          = 1.8200e-05;  // u-m air viscosity
+    // TODO(Seb): What are these?? Do we want them as user inputs?
     Zmult             = 1;
     Ymult             = 1;
 
@@ -171,13 +181,14 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
                                          curve_type, m*dx, cone_lengths.len() );
     }
 
-    rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
-    rad_betaS  = rad_beta / c_user;
+    // normalize radiation parameters
+    rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);
+    rad_betaS  = rad_beta / c;
 
     // --------Compute loss arrays---------------------------------------------
     if (computeVisco) {
-        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
-                            c_user, Zmult, Ymult);
+        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
+                            c, Zmult, Ymult);
 
         init_loss_state_array(M);
     }
@@ -188,23 +199,41 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     std::copy(allGeoSettings_new.begin(),
                 allGeoSettings_new.end(),
                 allGeoSettings_old.begin());
+    printf("init done\n");
     return OK;
   }
+
+
 
   int aperf() {  // calculate one audio block (at k-time)
     csnd::AudioSig out_feedback(this, outargs(0));   // feedback output (M = 0)
     csnd::AudioSig out_sound(this, outargs(1));   // sound out (at vari M != 0)
     csnd::AudioSig in(this, inargs(0));              // Csound opcode in
-    L = inargs[1];   // Length as input
+
+    // --------------  user inputs --------------------------------
+    L          = inargs[1];  // Length as input
     pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
-    std::copy(inargs.vector_data<MYFLT>(3).begin(),
-                inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(),
-                inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
+    mult_alpha = inargs[3];  // tube end reflection coefficient (radiation)
+    mult_rho   = inargs[4];  // density coefficient
+
+    cone_lengths.allocate(csound, maxGeoSegments);
+    radii_in.allocate(csound, maxGeoSegments);
+    radii_out.allocate(csound, maxGeoSegments);
+    curve_type.allocate(csound, maxGeoSegments);
+
+    // copy user provided geometry to MYFLT arrays
     std::copy(inargs.vector_data<MYFLT>(5).begin(),
-                inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
+              inargs.vector_data<MYFLT>(5).end(), cone_lengths.begin());
     std::copy(inargs.vector_data<MYFLT>(6).begin(),
-                inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
+              inargs.vector_data<MYFLT>(6).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(7).begin(),
+              inargs.vector_data<MYFLT>(7).end(), radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(8).begin(),
+              inargs.vector_data<MYFLT>(8).end(), curve_type.begin());
+    // TODO(AH): How to make this optional?
+    computeVisco = inargs[9];  // save CPU
+
+
 
     // ------------ check if geometry has changed in one array -----------------
     allGeoSettings_new[0] = L;
@@ -232,17 +261,15 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
           S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
                                        curve_type, m*dx, cone_lengths.len());
         }
-
-        rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
-        //TODO(Seb): Why no rad_betaS??
+        rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
 
         // -------- interpolate old grid status to new grid for each point------
         interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
         if (computeVisco) {
             interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
-            compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
-                                c_user, Zmult, Ymult);
+            compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
+                                c, Zmult, Ymult);
             }
     }  // Ending bracket for geometryChanged
 
@@ -251,7 +278,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
         out_feedback[i] = pnew[0];  // Output pressure, tube begin for coupling
         vnew[0]  = in[i];  // Input external velocity at beginning of tube
         if (computeVisco) {
-            update_visco(M, dx, dt, rho_user, iter_S,
+            update_visco(M, dx, dt, (mult_rho * rho), iter_S,
                         iter_vold, iter_pold, iter_vnew, iter_pnew);
         } else {
             int mult_rho = 1;
