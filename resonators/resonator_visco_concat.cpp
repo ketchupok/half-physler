@@ -91,6 +91,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> allGeoSettings_new;
   csnd::AuxMem<MYFLT> allGeoSettings_old;
   bool geometryChanged;
+  bool computeVisco;
 
 
   int init() {
@@ -106,18 +107,28 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     allGeoSettings_new.allocate(csound, 1 + (maxGeoSegments*4));
     allGeoSettings_old.allocate(csound, 1 + (maxGeoSegments*4));
     geometryChanged = false;
+    computeVisco = true;
 
     // copy user provided geometry to MYFLT arrays
-    std::copy(inargs.vector_data<MYFLT>(3).begin(), inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(), inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(5).begin(), inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(6).begin(), inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),
+            inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),
+            inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(5).begin(),
+            inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(6).begin(),
+            inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
 
+// copy all geometry into one long array, for comparison if changed
     allGeoSettings_new[0] = L;
-    std::copy(cone_lengths.begin(), cone_lengths.end(), allGeoSettings_new.begin()+1);
-    std::copy(radii_in.begin(), radii_in.end(), allGeoSettings_new.begin() + 1 + maxGeoSegments);
-    std::copy(radii_out.begin(), radii_out.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
-    std::copy(curve_type.begin(), curve_type.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
+    std::copy(cone_lengths.begin(), cone_lengths.end(),
+                allGeoSettings_new.begin()+1);
+    std::copy(radii_in.begin(), radii_in.end(),
+                allGeoSettings_new.begin() + 1 + maxGeoSegments);
+    std::copy(radii_out.begin(), radii_out.end(),
+                allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
+    std::copy(curve_type.begin(), curve_type.end(),
+                allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
 
     c_user            = 3.4386e+02;  // u-m speed of sound
     rho_user          = 1.2000e+00;  // u-m density
@@ -144,7 +155,8 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     iter_vnew  = vnew.begin();
     iter_S     = S.begin();
 
-    alloc_visco_memory(csound);
+    if (computeVisco)
+        alloc_visco_memory(csound);
 
     // Init grid points with 0
     for (int m = 0; m<= M; m++) {
@@ -159,44 +171,55 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
                                          curve_type, m*dx, cone_lengths.len() );
     }
 
-    rad_alphaS = rad_alpha / sqrt(S[M]); // normalize radiation parameters
+    rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
     rad_betaS  = rad_beta / c_user;
 
     // --------Compute loss arrays---------------------------------------------
+    if (computeVisco) {
+        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
+                            c_user, Zmult, Ymult);
 
-    compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
-                        c_user, Zmult, Ymult);
+        init_loss_state_array(M);
+    }
 
-    init_loss_state_array(M);
     Lold  =  L;
     Mold  =  M;
     dxold  =  dx;
-    std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(), allGeoSettings_old.begin());
+    std::copy(allGeoSettings_new.begin(),
+                allGeoSettings_new.end(),
+                allGeoSettings_old.begin());
     return OK;
   }
 
-  int aperf() { // calculate one audio block
+  int aperf() {  // calculate one audio block (at k-time)
     csnd::AudioSig out_feedback(this, outargs(0));   // feedback output (M = 0)
     csnd::AudioSig out_sound(this, outargs(1));   // sound out (at vari M != 0)
     csnd::AudioSig in(this, inargs(0));              // Csound opcode in
     L = inargs[1];   // Length as input
     pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
-    std::copy(inargs.vector_data<MYFLT>(3).begin(),inargs.vector_data<MYFLT>(3).end(),cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(4).begin(),inargs.vector_data<MYFLT>(4).end(),radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(6).begin(),inargs.vector_data<MYFLT>(6).end(),curve_type.begin());
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),
+                inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),
+                inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(5).begin(),
+                inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
+    std::copy(inargs.vector_data<MYFLT>(6).begin(),
+                inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
 
-    // ------------ check if geometry has changed ---------------------------
+    // ------------ check if geometry has changed in one array -----------------
     allGeoSettings_new[0] = L;
-    std::copy(cone_lengths.begin(), cone_lengths.end(), allGeoSettings_new.begin()+1);
-    std::copy(radii_in.begin(), radii_in.end(), allGeoSettings_new.begin() + 1 + maxGeoSegments);
-    std::copy(radii_out.begin(), radii_out.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
-    std::copy(curve_type.begin(), curve_type.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
-    // test until the first difference, in best case its kLength at elem 0
+    std::copy(cone_lengths.begin(), cone_lengths.end(),
+                allGeoSettings_new.begin()+1);
+    std::copy(radii_in.begin(), radii_in.end(),
+                allGeoSettings_new.begin() + 1 + maxGeoSegments);
+    std::copy(radii_out.begin(), radii_out.end(),
+                allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
+    std::copy(curve_type.begin(), curve_type.end(),
+                allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
+
+    // compare until the first difference, in best case its kLength at elem 0
     for (int x = 0; x <= (1 + (maxGeoSegments*4)); x++) {
-            printf("new: %f  old: %f\n", allGeoSettings_new[0], allGeoSettings_old[0]);
         if (allGeoSettings_new[x] != allGeoSettings_old[x]) {
-            printf("found check goe\n");
             geometryChanged = true;
             break;
         }
@@ -213,40 +236,50 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
         rad_alphaS = rad_alpha / sqrt(S[M]);  // normalize radiation parameters
         //TODO(Seb): Why no rad_betaS??
 
-        // -------- interpolate old grid status to new grid for each point--------
+        // -------- interpolate old grid status to new grid for each point------
         interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
-        interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
-        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
-                            c_user, Zmult, Ymult);
-    } //Ending bracket for changed length
+        if (computeVisco) {
+            interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
+            compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, rho_user, \
+                                c_user, Zmult, Ymult);
+            }
+    }  // Ending bracket for geometryChanged
 
     int i  = 0;
     for (auto &o_sound : out_sound) {  // For each sample ..
-        out_feedback[i] = pnew[0];  // Output pressure at tube begin for coupling
+        out_feedback[i] = pnew[0];  // Output pressure, tube begin for coupling
         vnew[0]  = in[i];  // Input external velocity at beginning of tube
-        update_visco(M,
-                dx, dt, rho_user, iter_S, iter_vold, iter_pold, iter_vnew, iter_pnew);
-
+        if (computeVisco) {
+            update_visco(M, dx, dt, rho_user, iter_S,
+                        iter_vold, iter_pold, iter_vnew, iter_pnew);
+        } else {
+            int mult_rho = 1;
+            update_vp(M, dt, dx, c, (mult_rho * rho), iter_S, iter_pold,
+                    iter_vold, iter_pnew, iter_vnew);
+            }
         // Boundary condition at tube end has radiation losses, damps traveling wave
         pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
         i++;
 
         // sound output at variable grid point
-        int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)),M-1);
+        int pickup_idx = std::min(int(ceil(pickup_pos * L/dx)), M-1);
         o_sound = pnew[pickup_idx];
 
-        update_losses(M, iter_vold, iter_pold, iter_vnew, iter_pnew);
+        if (computeVisco) {
+            update_losses(M, iter_vold, iter_pold, iter_vnew, iter_pnew);
+        }
         // Copying p(n+1) to p(n) and v(n+1) to v(n),
         // i.e. new becomes old grid for next call
         std::copy(pnew.begin(), pnew.end(), pold.begin());
         std::copy(vnew.begin(), vnew.end(), vold.begin());
     }
 
-    Lold = L;
-    Mold = M;
-    dxold = dx;
-    std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(), allGeoSettings_old.begin());
+    Lold            = L;
+    Mold            = M;
+    dxold           = dx;
+    std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(),
+              allGeoSettings_old.begin());
     geometryChanged = false;
 
     return OK;
