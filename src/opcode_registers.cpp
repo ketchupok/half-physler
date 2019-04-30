@@ -9,5 +9,5 @@
 void csnd::on_load(Csound *csound) {
   csnd::plugin<Cone_Radiation_Losses>(csound, "halfphysler", "aa", "akkkkkk", csnd::thread::ia);
   csnd::plugin<Cone_Radiation_Losses_fixedM_Bela>(csound, "halfphysler_bela", "aa", "akkkkkk", csnd::thread::ia);
-  csnd::plugin<Resonator_Visco_Concat>(csound, "tube_resonator", "aa", "akki[]i[]i[]i[]", csnd::thread::ia);
+  csnd::plugin<Resonator_Visco_Concat>(csound, "tube_resonator", "aa", "akkk[]k[]k[]k[]", csnd::thread::ia);
 }

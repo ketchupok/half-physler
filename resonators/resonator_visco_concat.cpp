@@ -87,20 +87,37 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
   csnd::AuxMem<MYFLT> radii_out;
   csnd::AuxMem<MYFLT> curve_type;
 
+  int maxGeoSegments;
+  csnd::AuxMem<MYFLT> allGeoSettings_new;
+  csnd::AuxMem<MYFLT> allGeoSettings_old;
+  bool geometryChanged;
+
 
   int init() {
     L          = inargs[1];  // Length as input
     pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
-    cone_lengths.allocate(csound, inargs.vector_data<MYFLT>(3).len());
-    radii_in.allocate(csound, inargs.vector_data<MYFLT>(4).len());
-    radii_out.allocate(csound, inargs.vector_data<MYFLT>(5).len());
-    curve_type.allocate(csound, inargs.vector_data<MYFLT>(6).len());
+
+    maxGeoSegments = 25;      // Gemoetry can have up to 25 segments
+    cone_lengths.allocate(csound, maxGeoSegments);
+    radii_in.allocate(csound, maxGeoSegments);
+    radii_out.allocate(csound, maxGeoSegments);
+    curve_type.allocate(csound, maxGeoSegments);
+
+    allGeoSettings_new.allocate(csound, 1 + (maxGeoSegments*4));
+    allGeoSettings_old.allocate(csound, 1 + (maxGeoSegments*4));
+    geometryChanged = false;
 
     // copy user provided geometry to MYFLT arrays
     std::copy(inargs.vector_data<MYFLT>(3).begin(), inargs.vector_data<MYFLT>(3).end(), cone_lengths.begin());
     std::copy(inargs.vector_data<MYFLT>(4).begin(), inargs.vector_data<MYFLT>(4).end(), radii_in.begin());
     std::copy(inargs.vector_data<MYFLT>(5).begin(), inargs.vector_data<MYFLT>(5).end(), radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(6).begin(), inargs.vector_data<MYFLT>(6).end(), curve_type.begin());
+
+    allGeoSettings_new[0] = L;
+    std::copy(cone_lengths.begin(), cone_lengths.end(), allGeoSettings_new.begin()+1);
+    std::copy(radii_in.begin(), radii_in.end(), allGeoSettings_new.begin() + 1 + maxGeoSegments);
+    std::copy(radii_out.begin(), radii_out.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
+    std::copy(curve_type.begin(), curve_type.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
 
     c_user            = 3.4386e+02;  // u-m speed of sound
     rho_user          = 1.2000e+00;  // u-m density
@@ -154,7 +171,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     Lold  =  L;
     Mold  =  M;
     dxold  =  dx;
-
+    std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(), allGeoSettings_old.begin());
     return OK;
   }
 
@@ -169,10 +186,26 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
     std::copy(inargs.vector_data<MYFLT>(5).begin(),inargs.vector_data<MYFLT>(5).end(),radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(6).begin(),inargs.vector_data<MYFLT>(6).end(),curve_type.begin());
 
+    // ------------ check if geometry has changed ---------------------------
+    allGeoSettings_new[0] = L;
+    std::copy(cone_lengths.begin(), cone_lengths.end(), allGeoSettings_new.begin()+1);
+    std::copy(radii_in.begin(), radii_in.end(), allGeoSettings_new.begin() + 1 + maxGeoSegments);
+    std::copy(radii_out.begin(), radii_out.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*2)));
+    std::copy(curve_type.begin(), curve_type.end(), allGeoSettings_new.begin() + (1 + (maxGeoSegments*3)));
+    // test until the first difference, in best case its kLength at elem 0
+    for (int x = 0; x <= (1 + (maxGeoSegments*4)); x++) {
+            printf("new: %f  old: %f\n", allGeoSettings_new[0], allGeoSettings_old[0]);
+        if (allGeoSettings_new[x] != allGeoSettings_old[x]) {
+            printf("found check goe\n");
+            geometryChanged = true;
+            break;
+        }
+    }
+
     // ------------ Re-calculate the grid ---------------------------
-    if(inargs[1]!=Lold) {  // new geometry calculations only when length changed
+    if (geometryChanged) {  // new geometry calculations only when length change
         grid_init(L, dt, &dx, &M, &L);  // setup grid for finite difference
-        for (int m = 0; m<= M; m++){  // new cross sectional area
+        for (int m = 0; m<= M; m++) {  // new cross sectional area
           S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
                                        curve_type, m*dx, cone_lengths.len());
         }
@@ -209,9 +242,12 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 7> {
         std::copy(pnew.begin(), pnew.end(), pold.begin());
         std::copy(vnew.begin(), vnew.end(), vold.begin());
     }
+
     Lold = L;
     Mold = M;
     dxold = dx;
+    std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(), allGeoSettings_old.begin());
+    geometryChanged = false;
 
     return OK;
   }
