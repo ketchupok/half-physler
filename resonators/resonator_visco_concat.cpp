@@ -237,6 +237,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
 
     // ------------ check if geometry has changed in one array -----------------
     allGeoSettings_new[0] = L;
+    // this is a bit redundant, but ...nicer for the comparison
     std::copy(cone_lengths.begin(), cone_lengths.end(),
                 allGeoSettings_new.begin()+1);
     std::copy(radii_in.begin(), radii_in.end(),
