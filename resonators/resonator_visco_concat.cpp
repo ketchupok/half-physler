@@ -100,9 +100,6 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
   int init() {
     // --------------  user inputs --------------------------------
     L          = 0.1;  // inargs[1] Length as input
-    pickup_pos = 0.5;  // inargs[2] TODO(AH): relative pickup position M/2 to M
-    mult_alpha = 1.0;  // inargs[3] tube end reflection coefficient (radiation)
-    mult_rho   = 1.0;  // inargs[4] density coefficient
 
     // it is currently (Apr. 2019) discussed in the Csnd-dev list,
     // if k-time array size changes are allowed or not
@@ -114,17 +111,20 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     curve_type.allocate(csound, maxGeoSegments);
 
     // inargs[5..8] copy user provided geometry to MYFLT arrays
+    std::copy(inargs.vector_data<MYFLT>(2).begin(),
+              inargs.vector_data<MYFLT>(2).end(), cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),
+              inargs.vector_data<MYFLT>(3).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),
+              inargs.vector_data<MYFLT>(4).end(), radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(5).begin(),
-              inargs.vector_data<MYFLT>(5).end(), cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(6).begin(),
-              inargs.vector_data<MYFLT>(6).end(), radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(7).begin(),
-              inargs.vector_data<MYFLT>(7).end(), radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(8).begin(),
-              inargs.vector_data<MYFLT>(8).end(), curve_type.begin());
+              inargs.vector_data<MYFLT>(5).end(), curve_type.begin());
+    pickup_pos = 0.5;  // inargs[6] TODO(AH): relative pickup position M/2 to M
+    mult_alpha = 1.0;  // inargs[7] tube end reflection coefficient (radiation)
+    mult_rho   = 1.0;  // inargs[8] density coefficient
     // TODO(AH): How to make this optional?
     // computeVisco = inargs[9];  // save CPU
-     computeVisco = true;
+    computeVisco = true;
 
 
     // copy all geometry into one long array, for comparison if changed
@@ -212,9 +212,6 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
 
     // --------------  user inputs --------------------------------
     L          = inargs[1];  // Length as input
-    pickup_pos = inargs[2];  // TODO(AH): relative pickup position M/2 to M
-    mult_alpha = inargs[3];  // tube end reflection coefficient (radiation)
-    mult_rho   = inargs[4];  // density coefficient
 
     cone_lengths.allocate(csound, maxGeoSegments);
     radii_in.allocate(csound, maxGeoSegments);
@@ -222,14 +219,17 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     curve_type.allocate(csound, maxGeoSegments);
 
     // copy user provided geometry to MYFLT arrays
+    std::copy(inargs.vector_data<MYFLT>(2).begin(),
+              inargs.vector_data<MYFLT>(2).end(), cone_lengths.begin());
+    std::copy(inargs.vector_data<MYFLT>(3).begin(),
+              inargs.vector_data<MYFLT>(3).end(), radii_in.begin());
+    std::copy(inargs.vector_data<MYFLT>(4).begin(),
+              inargs.vector_data<MYFLT>(4).end(), radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(5).begin(),
-              inargs.vector_data<MYFLT>(5).end(), cone_lengths.begin());
-    std::copy(inargs.vector_data<MYFLT>(6).begin(),
-              inargs.vector_data<MYFLT>(6).end(), radii_in.begin());
-    std::copy(inargs.vector_data<MYFLT>(7).begin(),
-              inargs.vector_data<MYFLT>(7).end(), radii_out.begin());
-    std::copy(inargs.vector_data<MYFLT>(8).begin(),
-              inargs.vector_data<MYFLT>(8).end(), curve_type.begin());
+              inargs.vector_data<MYFLT>(5).end(), curve_type.begin());
+    pickup_pos = inargs[6];  // TODO(AH): relative pickup position M/2 to M
+    mult_alpha = inargs[7];  // tube end reflection coefficient (radiation)
+    mult_rho   = inargs[8];  // density coefficient
     // TODO(AH): How to make this optional?
     computeVisco = inargs[9];  // save CPU
 
