@@ -44,7 +44,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
-       aFeedb, aSound tube_resonator aPressure, kLength, kRad, kSlope kRad, kSlope, kEndReflection, kDensity
+       aFeedb, aSound tube_resonator aAirVelocity, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, [kPick_Pos, kEndReflection, kDensity, kComputeVisco]
     */
 
   // grid arrays for pressure and velocity
@@ -99,7 +99,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
 
   int init() {
     // --------------  user inputs --------------------------------
-    L          = 0.1;  // inargs[1] Length as input
+    L = 0.1;  // inargs[1] Length as input
 
     // it is currently (Apr. 2019) discussed in the Csnd-dev list,
     // if k-time array size changes are allowed or not
