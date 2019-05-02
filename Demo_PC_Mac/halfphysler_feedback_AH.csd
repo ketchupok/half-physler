@@ -20,7 +20,7 @@ asig, kFbk, idel,kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity
  kFbk = abs(kFbk) < 1 ? kFbk : 0
      kCylinder_Radius_m init 0.0075    ; initial radius of cone
      kSlope init 0.000                 ; -0.01 - 0.02  - default (0)
-     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
+     kEndReflection init 1.0           ;  0.1 - 4      - default (1)
      kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
      kPick init 0.0                    ;  0.0 = left tube end - 1.0 = right tube end - default (0)
      kLength_m init .7 ; =122Hz plays correctly
@@ -60,7 +60,7 @@ instr 1
     kFeedback           ctrl7 1, 47, 0.00001, 0.005
 
 
-    ;kLength_m port kLength_m, 0.1
+    kLength_m port kLength_m, 0.01
     kCylinder_Radius_m port kCylinder_Radius_m, 0.1
     kSlope port kSlope, 0.1
     kEndReflection port kEndReflection, 0.1
@@ -68,7 +68,6 @@ instr 1
     kPick_Pos port kPick_Pos, 0.1
     kFeedback port kFeedback, 0.1
 
-    iDelay init 0.3
     aL FeedbackHalfphysler aImpulse, kFeedback, 0.0003, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick_Pos
     aL AtanLimit aL
     out aL
