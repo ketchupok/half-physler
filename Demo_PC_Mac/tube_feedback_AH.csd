@@ -1,70 +1,49 @@
 <CsoundSynthesizer>
 <CsOptions>
 --opcode-lib=./opcodes_iwk.so
--odac -b256 -B2048
+-odac1 -b256 -B2048 -Ma
 ;-otest.wav
 </CsOptions>
 
 <CsInstruments>
 
-ksmps = 1
+ksmps = 32
 sr = 44100
 0dbfs = 1
 
-opcode TubeFeedbackClarinet,a,aki
+opcode FeedbackTube,a,akikkkkkkk
 setksmps 1
-asig,kg,idel xin
+asig, kFbk, idel,kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick_Pos, kComputeVisco xin
  kpos init 0
  isize = idel > 1/sr ? round(idel*sr) : 1
  adelay[] init isize
- kg = abs(kg) < 1 ? kg : 0
+ kFbk = abs(kFbk) < 1 ? kFbk : 0
+     kCylinder_Radius_m init 0.0075    ; initial radius of cone
+     kSlope init 0.000                 ; -0.01 - 0.02  - default (0)
+     kEndReflection init 1.0           ;  0.1 - 4      - default (1)
+     kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
+     kPick_Pos init 0.0                    ;  0.0 = left tube end - 1.0 = right tube end - default (0)
+     kLength_m init .7 ; =122Hz plays correctly
+     ;kLength_m linseg .3,  1, .6
 
-     icone_lengths[] fillarray 0.0316, 0.051, .3, 0.2       ; lengths of cone segments [m]
-     iradii_in[] fillarray 0.0055, 0.00635, 0.0075, 0.0075   ; radii of cone segments [m]
-     iradii_out[]  fillarray 0.0055, 0.0075, 0.0075, 0.0275  ; slopes of cone segments
-     icurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
-     /*
-     icone_lengths[] fillarray 1       ; lengths of cone segments [m]
-     iradii_in[] fillarray 0.0075  ; radii of cone segments [m]
-     iradii_out[]  fillarray 0.0075  ; radius of cone segment end
-     icurve_type[] fillarray 1                     ; 1 = linear, 2 = parabolic; 3 = exponential approximation
-     */
-     kPick init .9    ;  0.0 = left tube end - 1.0 = right tube end - default (0)
-     kPick = 0.0
-     kLength init 0.35
-     ;kLength randomh .7, .5, 8
-     ;kLength = 0.7
-     ay_f, ay tube_resonator 0.03*asig+adelay[kpos]*kg, kLength, kPick, icone_lengths, iradii_in, iradii_out, icurve_type
-  xout adelay[kpos]
- ;ay tone ay, 200
- ;ay = 2 * taninv(ay) / 3.1415927
-     adelay[kpos] = ay
-     kpos = kpos == isize-1 ? 0 : kpos+1
-endop
+     kcone_lengths[] fillarray .5, .5       ; lengths of cone segments [m]
+     kradii_in[] fillarray 0.0075, 0.0075  ; radii of cone segments [m]
+     kradii_out[]  fillarray 0.0075, 0.0075   ; radius of cone segment end
+     kcurve_type[] fillarray 1
+     ;kComputeVisco = 1
+     kradii_out[0] = kSlope
+     kradii_in[0] = kCylinder_Radius_m
 
-opcode TubeFeedbackCylinder,a,aki
-setksmps 1
-asig,kg,idel xin
- kpos init 0
- isize = idel > 1/sr ? round(idel*sr) : 1
- adelay[] init isize
- kg = abs(kg) < 1 ? kg : 0
+     printk 1, kradii_out[0]
+     ;ay, aSound halfphysler 0.03*asig+adelay[kpos]*kFbk, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick
+     kDensity = 1.0 ; keep 1.0 when visco ON
+     aFeedback, aSound tube_resonator 0.03*asig+adelay[kpos]*kFbk, kLength_m, kcone_lengths, kradii_in, kradii_out, kcurve_type, kPick_Pos, kEndReflection, kDensity, kComputeVisco
+ ;xout adelay[kpos]
+ xout aSound
 
-     icone_lengths[] fillarray 1       ; lengths of cone segments [m]
-     iradii_in[] fillarray 0.0075  ; radii of cone segments [m]
-     iradii_out[]  fillarray 0.0075  ; radius of cone segment end
-     icurve_type[] fillarray 1                     ; 1 = linear, 2 = parabolic; 3 = exponential approximation
-
-     kPick init .9    ;  0.0 = left tube end - 1.0 = right tube end - default (0)
-     kPick = 0.0
-     kLength init 0.35 ;235Hz
-     kLength init 0.7  ;118Hz
-     ;kLength randomh .7, .5, 8
-     ;kLength = 0.7
-     ay_f, ay tube_resonator 0.03*asig+adelay[kpos]*kg, kLength, kPick, icone_lengths, iradii_in, iradii_out, icurve_type
-  xout adelay[kpos]
-     adelay[kpos] = ay
-     kpos = kpos == isize-1 ? 0 : kpos+1
+ aFeedback = 2 * taninv(aFeedback) / 3.1415927 ; limiter
+ adelay[kpos] = aFeedback
+ kpos = kpos == isize-1 ? 0 : kpos+1
 endop
 
 opcode AtanLimit, a, a
@@ -73,20 +52,44 @@ opcode AtanLimit, a, a
   xout aout
 endop
 
+opcode Saw, a, kk
+    kfreq, kamp xin
+    asig     vco2 kamp, kfreq
+    xout asig
+endop
+
 
 instr 1
-    asig mpulse .5, 10
-    ;adel TubeFeedback asig, 0.00012, 0.0003
-    adel TubeFeedbackCylinder asig, 0.00007, 0.0003
-    aSound AtanLimit adel
-    out aSound
 
+    aImpulse mpulse .5, 1000
+    kLength_m           ctrl7 1, 41, 0.3, 0.9
+    kCylinder_Radius_m  ctrl7 1, 42, 0.0075, 0.0095
+    kSlope              ctrl7 1, 43, 0.0035, 0.0135
+    kEndReflection      ctrl7 1, 44, 0.1, 4.0
+    kDensity            ctrl7 1, 45, 0.1, 30.0
+    kPick_Pos           ctrl7 1, 46, 0.0, 1.0
+    ;printk 0.5, kLength_m
+    kFeedback           ctrl7 1, 47, 0.00001, 0.005
+    kComputeVisco       ctrl7 1, 48, 0, 1.0
+
+
+    kLength_m port kLength_m, 0.01
+    kCylinder_Radius_m port kCylinder_Radius_m, 0.1
+    kSlope port kSlope, 0.1
+    kEndReflection port kEndReflection, 0.1
+    kDensity port kDensity, 0.1
+    kPick_Pos port kPick_Pos, 0.1
+    kFeedback port kFeedback, 0.1
+
+    aL FeedbackTube aImpulse, kFeedback, 0.0003, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick_Pos, kComputeVisco
+    aL AtanLimit aL
+    out aL
 endin
 
 
 </CsInstruments>
 <CsScore>
-i1 0.5 10
+i1 0.5 200
 ;i6 0.5 200
 
 </CsScore>
