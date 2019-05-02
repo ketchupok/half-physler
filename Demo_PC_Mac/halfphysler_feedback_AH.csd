@@ -57,7 +57,17 @@ instr 1
     kDensity            ctrl7 1, 45, 0.1, 30.0
     kPick_Pos           ctrl7 1, 46, 0.0, 1.0
     ;printk 0.5, kLength_m
-    kFeedback           ctrl7 1, 47, 0.001, 0.005
+    kFeedback           ctrl7 1, 47, 0.00001, 0.005
+
+
+    ;kLength_m port kLength_m, 0.1
+    kCylinder_Radius_m port kCylinder_Radius_m, 0.1
+    kSlope port kSlope, 0.1
+    kEndReflection port kEndReflection, 0.1
+    kDensity port kDensity, 0.1
+    kPick_Pos port kPick_Pos, 0.1
+    kFeedback port kFeedback, 0.1
+
     iDelay init 0.3
     aL FeedbackHalfphysler aImpulse, kFeedback, 0.0003, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick_Pos
     aL AtanLimit aL
