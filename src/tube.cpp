@@ -178,6 +178,8 @@ void update_visco(int M, MYFLT dx, \
       for (int m = 0; m <= M-1; m++) {  // Solve the second diff. eq. wrt pnew
         pnew[m] = pold[m] - (1/dx * (S[m+1]*vnew[m+1] - S[m]*vnew[m]) + sumY2[m])/factors_p[m];
       }
+      // TODO(Vasi/Seb) why is not vnew[0] = 0 in this case??
+      // vnew[0]  = 0;  // input flow is zero after the first sample
 }
 
 void update_losses(int M, MYFLT* vold, MYFLT* pold, MYFLT* vnew, MYFLT* pnew) {

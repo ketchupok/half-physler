@@ -286,7 +286,8 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
                     iter_vold, iter_pnew, iter_vnew);
             }
         // Boundary condition at tube end has radiation losses, damps traveling wave
-        pnew[M]  = (pold[M]*rad_betaS/rho + vnew[M]-vold[M]) / (rad_betaS/rho + rad_alphaS/rho*dt);
+        pnew[M]  = (pold[M]*rad_betaS/(mult_rho * rho) + vnew[M]-vold[M]) /
+                   (rad_betaS/(mult_rho * rho) + rad_alphaS/(mult_rho * rho)*dt);
         i++;
 
         // sound output at variable grid point
