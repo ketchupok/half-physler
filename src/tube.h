@@ -40,7 +40,7 @@ void update_vp(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
                         MYFLT *pnew, MYFLT *vnew);
 
 void update_visco(int M, MYFLT dx, \
-			 MYFLT dt, MYFLT rho, \
+			 MYFLT dt, MYFLT rho_user, \
 			 MYFLT* S, MYFLT* vold, MYFLT* pold, \
 			 MYFLT* vnew, MYFLT* pnew);
 
@@ -66,11 +66,11 @@ void interpolation_visco(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
 
 void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold);
 
-MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta);
+MYFLT R0Z(MYFLT r, MYFLT rho_user, MYFLT eta);
 
 void compute_loss_arrays(int M, MYFLT* S, MYFLT RsZ[4][100], \
 			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100],
-             MYFLT dt, MYFLT rho, MYFLT c, \
+             MYFLT dt, MYFLT rho_user, MYFLT c, \
        MYFLT Zmult = 1, MYFLT Ymult = 1);
 
 

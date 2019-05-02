@@ -158,7 +158,7 @@ void update_vp(int M, const MYFLT& dt, const MYFLT& dx, \
 }
 
 void update_visco(int M, MYFLT dx, \
-                        MYFLT dt, MYFLT rho, \
+                        MYFLT dt, MYFLT rho_user, \
                         MYFLT* S, MYFLT* vold, MYFLT* pold, \
                         MYFLT* vnew, MYFLT* pnew) {
       for (int m = 0; m <=  M; m++) {  // Solve the first diff. eq. wrt vnew
@@ -171,7 +171,7 @@ void update_visco(int M, MYFLT dx, \
       }
 
       for (int m = 1; m <=  M; m++) {  // Solve the first diff. eq. wrt vnew
-        vnew[m] = vold[m]*(rho/dt + sumZ1[m]) - 1/dx *(pold[m]-pold[m-1]) - sumZ2[m];
+        vnew[m] = vold[m]*(rho_user/dt + sumZ1[m]) - 1/dx *(pold[m]-pold[m-1]) - sumZ2[m];
         vnew[m] = vnew[m]/factors_v[m];
       }
 
@@ -397,17 +397,17 @@ void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxo
 }
 
 
-MYFLT R0Z(MYFLT r, MYFLT rho, MYFLT eta){
+MYFLT R0Z(MYFLT r, MYFLT rho_user, MYFLT eta){
     // constant R0 term in formular 6 (ISMA)
-  MYFLT K = r*sqrt(rho/eta);
-  MYFLT out  =  8*rho/(K*K);
+  MYFLT K = r*sqrt(rho_user/eta);
+  MYFLT out  =  8*rho_user/(K*K);
 
   return out;
 };
 
 void compute_loss_arrays(int M, MYFLT* S, MYFLT RsZ[4][100], \
                                 MYFLT LsZ[4][100], MYFLT GsY[4][100], \
-                                MYFLT CsY[4][100], MYFLT dt, MYFLT rho, MYFLT c, \
+                                MYFLT CsY[4][100], MYFLT dt, MYFLT rho_user, MYFLT c, \
                                 MYFLT Zmult, MYFLT Ymult) {
   for (int m = 0; m <= M; m++) {
     MYFLT r  = sqrt(S[m]/PI);
@@ -430,7 +430,7 @@ void compute_loss_arrays(int M, MYFLT* S, MYFLT RsZ[4][100], \
       MATSY[m*4+k] = Ymult*S[m]*gy_tmp[k] * exp(-cy_tmp[k]*dt*.5);
     }
 
-    factors_v[m] = rho/dt + sumZ1[m] + R0Z(r, rho, eta);  // formular 16 in ISMA
-    factors_p[m] = S[m]/(rho*c*c*dt) + sumY1[m];          // formular 17
+    factors_v[m] = rho_user/dt + sumZ1[m] + R0Z(r, rho_user, eta);  // formular 16 in ISMA
+    factors_p[m] = S[m]/(rho_user*c*c*dt) + sumY1[m];          // formular 17
   }
 }
