@@ -255,6 +255,8 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
         }
     }
 
+    rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
+
     // ------------ Re-calculate the grid ---------------------------
     if (geometryChanged) {  // new geometry calculations only when length change
         grid_init(L, dt, &dx, &M, &L);  // setup grid for finite difference
@@ -262,8 +264,6 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
           S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
                                        curve_type, m*dx, cone_lengths.len());
         }
-        rad_alphaS = (rad_alpha * mult_alpha) / sqrt(S[M]);  // normalization
-
         // -------- interpolate old grid status to new grid for each point------
         interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
         interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
@@ -282,7 +282,6 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
             update_visco(M, dx, dt, (mult_rho * rho), iter_S,
                         iter_vold, iter_pold, iter_vnew, iter_pnew);
         } else {
-            int mult_rho = 1;
             update_vp(M, dt, dx, c, (mult_rho * rho), iter_S, iter_pold,
                     iter_vold, iter_pnew, iter_vnew);
             }
