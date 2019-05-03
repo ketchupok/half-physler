@@ -80,6 +80,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
   //MYFLT rho_user;    // = 1.2000e+00; // density
 
   MYFLT mult_rho;     // user_multiplier for density
+  MYFLT mult_rho_old;     // user_multiplier for density
   MYFLT Zmult;       // specific impedance multiplier
   MYFLT Ymult;       // shunt admittance multiplier
   MYFLT pickup_pos;  // user defined pickup position in tube
@@ -193,9 +194,10 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
         init_loss_state_array(M);
     }
 
-    Lold  =  L;
-    Mold  =  M;
-    dxold  =  dx;
+    Lold         = L;
+    mult_rho_old = mult_rho;
+    Mold         = M;
+    dxold        = dx;
     std::copy(allGeoSettings_new.begin(),
                 allGeoSettings_new.end(),
                 allGeoSettings_old.begin());
@@ -270,6 +272,12 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
             }
     }  // Ending bracket for geometryChanged
 
+    if (mult_rho != mult_rho_old) {
+        printf("rho changed %f, old: %f \n", mult_rho, mult_rho_old);
+        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
+                            c, Zmult, Ymult);
+    }
+
     int i  = 0;
     for (auto &o_sound : out_sound) {  // For each sample ..
         out_feedback[i] = pnew[0];  // Output pressure, tube begin for coupling
@@ -299,9 +307,10 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
         std::copy(vnew.begin(), vnew.end(), vold.begin());
     }
 
-    Lold            = L;
-    Mold            = M;
-    dxold           = dx;
+    Lold         = L;
+    mult_rho_old = mult_rho;
+    Mold         = M;
+    dxold        = dx;
     std::copy(allGeoSettings_new.begin(), allGeoSettings_new.end(),
               allGeoSettings_old.begin());
     geometryChanged = false;

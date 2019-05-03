@@ -26,6 +26,15 @@
 #ifndef SRC_TUBE_H_
 #define SRC_TUBE_H_
 
+struct UserParameters {
+  csnd::AuxMem<MYFLT> cone_lengths;
+  csnd::AuxMem<MYFLT> radii_in;
+  csnd::AuxMem<MYFLT> radii_out;
+  csnd::AuxMem<MYFLT> curve_type;
+
+};
+
+
 void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
                MYFLT c = 3.4386e+02);
 

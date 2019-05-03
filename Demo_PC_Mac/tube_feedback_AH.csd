@@ -1,14 +1,15 @@
 <CsoundSynthesizer>
 <CsOptions>
 --opcode-lib=./opcodes_iwk.so
--odac1 -b256 -B2048 -Ma
+;-odac1 -b256 -B2048 -Ma
+-odac -iadc -+rtmidi=alsa -Ma  -b512 -B2048
 ;-otest.wav
 </CsOptions>
 
 <CsInstruments>
 
 ksmps = 32
-sr = 44100
+sr = 22050
 0dbfs = 1
 
 opcode FeedbackTube,a,akikkkkkkk
@@ -34,10 +35,10 @@ asig, kFbk, idel,kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity
      kradii_out[0] = kSlope
      kradii_in[0] = kCylinder_Radius_m
 
-     printk 1, kradii_out[0]
+     ;printk 1, kradii_out[0]
      ;ay, aSound halfphysler 0.03*asig+adelay[kpos]*kFbk, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick
-     kDensity = 1.0 ; keep 1.0 when visco ON
-     aFeedback, aSound tube_resonator 0.03*asig+adelay[kpos]*kFbk, kLength_m, kcone_lengths, kradii_in, kradii_out, kcurve_type, kPick_Pos, kEndReflection, kDensity, kComputeVisco
+     ;kDensity = 1.0 ; keep 1.0 when visco ON
+     aFeedback, aSound tube_resonator 0.03*asig+adelay[kpos]*kFbk, kLength_m, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
  ;xout adelay[kpos]
  xout aSound
 
@@ -62,22 +63,23 @@ endop
 instr 1
 
     aImpulse mpulse .5, 1000
-    kLength_m           ctrl7 1, 41, 0.3, 0.9
-    kCylinder_Radius_m  ctrl7 1, 42, 0.0075, 0.0095
-    kSlope              ctrl7 1, 43, 0.0035, 0.0135
-    kEndReflection      ctrl7 1, 44, 0.1, 4.0
-    kDensity            ctrl7 1, 45, 0.1, 30.0
-    kPick_Pos           ctrl7 1, 46, 0.0, 1.0
+    kLength_m           ctrl7 1, 21, 0.3, 0.9
+    kCylinder_Radius_m  ctrl7 1, 22, 0.0075, 0.0095
+    kSlope              ctrl7 1, 23, 0.0035, 0.0135
+    kEndReflection      ctrl7 1, 24, 0.1, 4.0
+    kDensity            ctrl7 1, 25, 0.5, 30.0
+    kPick_Pos           ctrl7 1, 26, 0.0, 1.0
     ;printk 0.5, kLength_m
-    kFeedback           ctrl7 1, 47, 0.00001, 0.005
-    kComputeVisco       ctrl7 1, 48, 0, 1.0
+    kFeedback           ctrl7 1, 27, 0.00001, 0.005
+    kComputeVisco       ctrl7 1, 28, 0, 1.0
 
 
-    kLength_m port kLength_m, 0.01
+    ;kLength_m port kLength_m, 0.01
+    ;kLength_m linseg 0.1, 20, 0.9
     kCylinder_Radius_m port kCylinder_Radius_m, 0.1
     kSlope port kSlope, 0.1
     kEndReflection port kEndReflection, 0.1
-    kDensity port kDensity, 0.1
+    ;kDensity port kDensity, 0.1
     kPick_Pos port kPick_Pos, 0.1
     kFeedback port kFeedback, 0.1
 
