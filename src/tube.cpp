@@ -154,7 +154,7 @@ void update_vp(int M, const MYFLT& dt, const MYFLT& dx, \
     pnew[m] = - dt *rho_user *c*c / S[m] * (S[m+1]*vnew[m+1]
               - S[m]*vnew[m])/dx + pold[m];
   }
-  vnew[0]  = 0;  // input flow is zero after the first sample
+  //vnew[0]  = 0;  // input flow is zero after the first sample
 }
 
 void update_visco(int M, MYFLT dx, \

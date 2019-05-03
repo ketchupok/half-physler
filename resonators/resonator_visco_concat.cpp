@@ -213,11 +213,6 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     // --------------  user inputs --------------------------------
     L          = inargs[1];  // Length as input
 
-    cone_lengths.allocate(csound, maxGeoSegments);
-    radii_in.allocate(csound, maxGeoSegments);
-    radii_out.allocate(csound, maxGeoSegments);
-    curve_type.allocate(csound, maxGeoSegments);
-
     // copy user provided geometry to MYFLT arrays
     std::copy(inargs.vector_data<MYFLT>(2).begin(),
               inargs.vector_data<MYFLT>(2).end(), cone_lengths.begin());
@@ -269,6 +264,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
         interpolation(M, Mold, Lold, dx, dxold, iter_vnew, iter_vold);
         if (computeVisco) {
             interpolation_visco_arrays(M, Mold, Lold, dx, dxold);
+            // this needs to be re-computed with Density(rho) change
             compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
                                 c, Zmult, Ymult);
             }
