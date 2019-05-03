@@ -229,17 +229,7 @@ MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, \
       break;
     }
   }
-/*
-    //printf("prelength in ini: %f\n", prelength);
-  while (grid_pos >= prelength  || (seg == num_segs-1)) {
-      prelength +=cone_lengths[seg];
-      seg++;
-      printf("seg: %d\n", seg);
-      //printf("prelength in for loop: %f\n", prelength);
-  }
-  prelength = prelength - cone_lengths[seg];  // set back to end of last segment
-  seg = seg - 1;
-*/
+
 //printf("prelength before switch: %f\n", prelength);
   switch (int(curve_type[seg])) {  // converting MYFLT to int for switch()
     case 1:  // 1 for linear approximation

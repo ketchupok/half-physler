@@ -271,11 +271,12 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
                                 c, Zmult, Ymult);
             }
     }  // Ending bracket for geometryChanged
-
-    if (mult_rho != mult_rho_old) {
-        printf("rho changed %f, old: %f \n", mult_rho, mult_rho_old);
-        compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
-                            c, Zmult, Ymult);
+    if (computeVisco) {
+        if (mult_rho != mult_rho_old && !geometryChanged) {
+            printf("rho changed %f, old: %f \n", mult_rho, mult_rho_old);
+            compute_loss_arrays(M, iter_S, RsZ, LsZ, GsY, CsY, dt, (mult_rho * rho), \
+                                c, Zmult, Ymult);
+        }
     }
 
     int i  = 0;
