@@ -44,7 +44,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
-       aFeedb, aSound tube_resonator aAirVelocity, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, [kPick_Pos, kEndReflection, kDensity, kComputeVisco]
+       aFeedb, aSound tube_resonator aAirVelocity, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, [kEndReflection, kDensity, kPick_Pos, kComputeVisco]
     */
 
   // grid arrays for pressure and velocity
@@ -119,9 +119,9 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
               inargs.vector_data<MYFLT>(4).end(), radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(5).begin(),
               inargs.vector_data<MYFLT>(5).end(), curve_type.begin());
-    pickup_pos = 0.5;  // inargs[6] TODO(AH): relative pickup position M/2 to M
-    mult_alpha = 1.0;  // inargs[7] tube end reflection coefficient (radiation)
-    mult_rho   = 1.0;  // inargs[8] density coefficient
+    mult_alpha = 1.0;  // inargs[6] tube end reflection coefficient (radiation)
+    mult_rho   = 1.0;  // inargs[7] density coefficient
+    pickup_pos = 0.5;  // inargs[8] TODO(AH): relative pickup position M/2 to M
     // TODO(AH): How to make this optional?
     // computeVisco = inargs[9];  // save CPU
     computeVisco = true;
@@ -222,9 +222,9 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
               inargs.vector_data<MYFLT>(4).end(), radii_out.begin());
     std::copy(inargs.vector_data<MYFLT>(5).begin(),
               inargs.vector_data<MYFLT>(5).end(), curve_type.begin());
-    pickup_pos = inargs[6];  // TODO(AH): relative pickup position M/2 to M
-    mult_alpha = inargs[7];  // tube end reflection coefficient (radiation)
-    mult_rho   = inargs[8];  // density coefficient
+    mult_alpha = inargs[6];  // tube end reflection coefficient (radiation)
+    mult_rho   = inargs[7];  // density coefficient
+    pickup_pos = inargs[8];  // TODO(AH): relative pickup position M/2 to M
     // TODO(AH): How to make this optional?
     computeVisco = inargs[9];  // save CPU
 
