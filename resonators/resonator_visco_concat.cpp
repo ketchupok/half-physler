@@ -40,7 +40,7 @@
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
 
-struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
+struct Resonator_Visco_Concat : csnd::Plugin<2, 11> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
@@ -96,6 +96,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
   csnd::AuxMem<MYFLT> allGeoSettings_old;
   bool geometryChanged;
   int computeVisco;
+  csnd::Table geo_table;
 
 
   int init() {
@@ -126,6 +127,9 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
     // TODO(AH): How to make this optional?
     // computeVisco = inargs[9];  // save CPU
     computeVisco = true;
+    geo_table.init(csound,inargs(10));
+    // TODO(AH): test that table large enougth >= M
+    printf("Table Length: %d\n", geo_table.len());
 
 
     // copy all geometry into one long array, for comparison if changed
@@ -180,6 +184,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
       // Setting Cross sectional area for each grid point (see ./src/tube.cpp)
       S[m]    = cross_area_concatenation(cone_lengths, radii_in, radii_out, \
                                          curve_type, m*dx, cone_lengths.len() );
+     geo_table[m] = S[m]* 100000;
     }
 
     // normalize radiation parameters
@@ -260,6 +265,7 @@ struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
         for (int m = 0; m<= M; m++) {  // new cross sectional area
           S[m] = cross_area_concatenation(cone_lengths, radii_in, radii_out,
                                        curve_type, m*dx, cone_lengths.len());
+          geo_table[m] = S[m] * 100000;
         }
         // -------- interpolate old grid status to new grid for each point------
         interpolation(M, Mold, Lold, dx, dxold, iter_pnew, iter_pold);
