@@ -39,7 +39,7 @@ instr 6
     ;kComputeVisco init 1
     kComputeVisco = 1
 
-    aFeedback, aSound tube_resonator 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
+    aFeedback, aSound resontube 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
     prints "PLAYING Resonator_Visco_Concat\n"
     out aSound
 endin

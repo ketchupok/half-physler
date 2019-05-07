@@ -1,6 +1,6 @@
 /*
   file: resonators/resonator_visco_concat.cpp
-  opcode-name: tube_resonator
+  opcode-name: resontube
 
   Copyright (C) 2018 - Alex Hofmann, Vasileios Chatziioannou,
                        Sebastian Schmutzhard, Gokberk Erdogan
@@ -40,11 +40,11 @@
 #include "../src/tube.h"   // Includes the functions
 #include "../src/const.h"  // Includes the constants
 
-struct Resonator_Visco_Concat : csnd::Plugin<2, 10> {
+struct ResonTube : csnd::Plugin<2, 10> {
     /* Resonator with radiation losses and viscothermal losses, driven with
        an initial air velocity. The shape can be defined by three arrays
 
-       aFeedb, aSound tube_resonator aAirVelocity, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, [kEndReflection, kDensity, kPick_Pos, kComputeVisco]
+       aFeedb, aSound resontube aAirVelocity, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, [kEndReflection, kDensity, kPick_Pos, kComputeVisco]
     */
 
   // grid arrays for pressure and velocity
