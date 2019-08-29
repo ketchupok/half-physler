@@ -1,6 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
---opcode-lib=./opcodes_iwk.so -b128
+--opcode-lib=./opcodes_iwkBela.so -b128
 -odac -iadc -m0d
 </CsOptions>
 <CsInstruments>
