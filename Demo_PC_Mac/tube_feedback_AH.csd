@@ -118,11 +118,58 @@ instr 2
     out aL
 endin
 
+opcode Sine, a, kk
+    kfreq, kamp xin
+    asig     poscil kamp, kfreq
+    xout asig
+endop
+
+
+instr 3
+; slow changes
+    aImpulse mpulse .1, 1000
+    kLength_m           = 0.5;
+    kLength_m  linseg 0.5, 20, 0.9
+
+    kCylinder_Radius_m  = 0.0075 ;ctrl7 1, 22, 0.0075, 0.0095
+    aCyi Sine 0.04, 0.004
+    kCylinder_Radius_m = aCyi + 0.0075
+
+    kR_out              = 0.0035 ; ctrl7 1, 23, 0.0035, 0.0135
+    ;kR_out linseg 0.0075, 2, 0.0075, 3, 0.001, 1, 0.003, 3, 0.009
+    aR_out Sine 0.03, 0.004
+    kR_out = (aR_out) + 0.0075
+
+    kEndReflection      = 0.3 ; ctrl7 1, 24, 0.1, 4.0
+    kDensity            = 1.0; ctrl7 1, 25, 0.5, 30.0
+    kPick_Pos           = 1.0; ctrl7 1, 26, 0.0, 1.0
+    ;apick Sine 0.07, 0.4
+    ;kPick_Pos = (apick) + 0.5
+    ;printk 0.5, kLength_m
+    kFeedback           = 0.001; ctrl7 1, 27, 0.00001, 0.005
+    kComputeVisco       = 1; ctrl7 1, 28, 0, 1.0
+
+
+    ;kLength_m port kLength_m, 0.01
+    ;kLength_m linseg 0.1, 20, 0.9
+    kCylinder_Radius_m port kCylinder_Radius_m, 0.1
+    kR_out port kR_out, 0.01
+    kEndReflection port kEndReflection, 0.1
+    ;kDensity port kDensity, 0.1
+    kPick_Pos port kPick_Pos, 0.1
+    kFeedback port kFeedback, 0.1
+
+    aL FeedbackTube aImpulse, kFeedback, 0.0003, kLength_m, kCylinder_Radius_m, kR_out, kEndReflection, kDensity, kPick_Pos, kComputeVisco
+    aL AtanLimit aL
+    out aL
+endin
+
 
 </CsInstruments>
 <CsScore>
 ;i1 0.5 200
-i2 0.5 200
+;i2 0.5 200
+i3 0.5 200
 ;i6 0.5 200
 
 </CsScore>
