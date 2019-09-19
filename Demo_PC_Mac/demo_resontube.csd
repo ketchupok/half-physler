@@ -17,21 +17,14 @@ instr 1
     kradii_out[]  fillarray 0.0055, 0.0075, 0.0075, 0.0275  ; end-radius of cone segments
     kcurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
 
-    aImpulse mpulse .5, .1
     kLength linseg 0.2, 2, 0.3
-
-    ;kPick_Pos init 0.0
     kPick_Pos = 1.0
-
     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
     kEndReflection = 1.0
-
-    ;kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
     kDensity = 1.0
-
-    ;kComputeVisco init 1
     kComputeVisco = 1
 
+    aImpulse mpulse .5, .1
     aFeedback, aSound resontube 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
     prints "PLAYING: Clarinet geometry & viscothermal losses\n"
     out aSound
@@ -45,75 +38,54 @@ instr 2
     kradii_out[]  fillarray 0.0055, 0.0075, 0.0075, 0.0275  ; end-radius of cone segments
     kcurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
 
-    aImpulse mpulse .5, .1
     kLength linseg 0.2, 2, 0.3
-
-    ;kPick_Pos init 0.0
     kPick_Pos = 1.0
-
     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
     kEndReflection = 1.0
-
-    ;kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
     kDensity = 1.0
-
-    ;kComputeVisco init 1
     kComputeVisco = 0
 
+    aImpulse mpulse .5, .1
     aFeedback, aSound resontube 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
     prints "PLAYING: Clarinet geometry without viscothermal losses\n"
     out aSound
 endin
 
 instr 3
-    ; simple tube
+    ; simple cylinder
     kcone_lengths[] fillarray 1.0       ; lengths of cone segments [m]
     kradii_in[] fillarray 0.0075        ; radii of cone segments [m]
     kradii_out[]  fillarray 0.0075      ; end-radius of cone segments
     kcurve_type[] fillarray 1           ; 1 = linear, 2 = parabolic; 3 = exponential approximation
 
-    aImpulse mpulse .5, .1
     kLength linseg 0.2, 2, 0.3
-
-    ;kPick_Pos init 0.0
     kPick_Pos = 1.0
-
     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
     kEndReflection = 1.0
-
-    ;kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
     kDensity = 1.0
-
-    ;kComputeVisco init 1
     kComputeVisco = 1
 
+    aImpulse mpulse .5, .1
     aFeedback, aSound resontube 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
     prints "PLAYING simple cylinder with viscothermal losses\n"
     out aSound
 endin
 
 instr 4
-    ; simple tube no visco
+    ; simple cylinder no viscothermal losses
     kcone_lengths[] fillarray 1.0       ; lengths of cone segments [m]
     kradii_in[] fillarray 0.0075        ; radii of cone segments [m]
     kradii_out[]  fillarray 0.0075      ; end-radius of cone segments
     kcurve_type[] fillarray 1           ; 1 = linear, 2 = parabolic; 3 = exponential approximation
 
-    aImpulse mpulse .5, .1
     kLength linseg 0.2, 2, 0.3
-
-    ;kPick_Pos init 0.0
     kPick_Pos = 1.0
-
     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
     kEndReflection = 1.0
-
-    ;kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
     kDensity = 1.0
-
-    ;kComputeVisco init 1
     kComputeVisco = 0
 
+    aImpulse mpulse .5, .1
     aFeedback, aSound resontube 0.005*aImpulse, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
     prints "PLAYING simple cylinder without viscothermal losses\n"
     out aSound
@@ -135,22 +107,16 @@ instr 5
     kcurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
 
     kLength linseg 0.2, 2, 0.3
-    ;kLength = 0.4
-    ;kPick_Pos init 0.0
     kPick_Pos = 1.0
 
     kEndReflection init 1.0           ;  0.1 - 30      - default (1)
     kEndReflection = 0.3
-
-    ;kDensity init 1.0                 ;  0.1 - 30.0    - default (1)
     kDensity = 1.0
-
-    ;kComputeVisco init 1
     kComputeVisco = 1
-    aWNoise WNoise 0.1
 
+    aWNoise WNoise 0.1
     aFeedback, aSound resontube 0.0007*aWNoise, kLength, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
-    prints "PLAYING: Clarinet gemoetry with viscothermal losses\n"
+    prints "PLAYING: Clarinet geometry with viscothermal losses\n"
     out aSound
 endin
 
