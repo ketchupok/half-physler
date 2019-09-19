@@ -1,7 +1,8 @@
 <CsoundSynthesizer>
 <CsOptions>
 --opcode-lib=./opcodes_iwk.so
--odac1 -b256 -B2048 -Ma
+;-odac1 -b256 -B2048 -Ma ; mac
+-odac -iadc -+rtmidi=alsa -Ma  -b256 -B2048
 ;-otest.wav
 </CsOptions>
 
@@ -50,14 +51,14 @@ endop
 instr 1
 
     aImpulse mpulse .5, 1000
-    kLength_m           ctrl7 1, 41, 0.3, 0.9
-    kCylinder_Radius_m  ctrl7 1, 42, 0.0075, 0.0095
-    kSlope              ctrl7 1, 43, -0.007, 0.007
-    kEndReflection      ctrl7 1, 44, 0.1, 4.0
-    kDensity            ctrl7 1, 45, 0.1, 30.0
-    kPick_Pos           ctrl7 1, 46, 0.0, 1.0
+    kLength_m           ctrl7 1, 21, 0.3, 0.9
+    kCylinder_Radius_m  ctrl7 1, 22, 0.0075, 0.0095
+    kSlope              ctrl7 1, 23, -0.007, 0.007
+    kEndReflection      ctrl7 1, 24, 0.1, 4.0
+    kDensity            ctrl7 1, 25, 0.1, 30.0
+    kPick_Pos           ctrl7 1, 26, 0.0, 1.0
     ;printk 0.5, kLength_m
-    kFeedback           ctrl7 1, 47, 0.00001, 0.005
+    kFeedback           ctrl7 1, 27, 0.00001, 0.005
 
 
     kLength_m port kLength_m, 0.01

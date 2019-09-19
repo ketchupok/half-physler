@@ -72,7 +72,7 @@ asig,kg,idel xin
      ;kLength randomh .7, .5, 4
      kLength = 0.7
 ; resonator creates wrong sound
-     ay_f, ay tube_resonator 0.03*asig+adelay[kpos]*kg, kLength, kPick, icone_lengths, iradii_in, iradii_out, icurve_type
+     ay_f, ay resontube 0.03*asig+adelay[kpos]*kg, kLength, kPick, icone_lengths, iradii_in, iradii_out, icurve_type
 
 ; this resonator works
      kCylinder_Radius_m init 0.0075    ; initial radius of cone
@@ -119,7 +119,7 @@ instr 6
     icurve_type[] fillarray 1, 1, 1, 2                      ; 1 = linear, 2 = parabolic; 3 = exponential approximation
     aImpulse mpulse 1, 10
     kLength randomh .7, .5, 4
-    ;a2 tube_resonator 0.03*aImpulse, kLength, icone_lengths, iradii_in, iradii_out, icurve_type
+    ;a2 resontube 0.03*aImpulse, kLength, icone_lengths, iradii_in, iradii_out, icurve_type
     a2 init 0
     prints "PLAYING Resonator_Visco_Concat\n"
     out a2

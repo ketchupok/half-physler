@@ -39,7 +39,7 @@ asig, kFbk, idel,kLength_m, kCylinder_Radius_m, kR_out, kEndReflection, kDensity
      ;printk 1, kradii_out[0]
      ;ay, aSound halfphysler 0.03*asig+adelay[kpos]*kFbk, kLength_m, kCylinder_Radius_m, kSlope, kEndReflection, kDensity, kPick
      ;kDensity = 1.0 ; keep 1.0 when visco ON
-     aFeedback, aSound tube_resonator 0.03*asig+adelay[kpos]*kFbk, kLength_m, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
+     aFeedback, aSound resontube 0.03*asig+adelay[kpos]*kFbk, kLength_m, kcone_lengths, kradii_in, kradii_out, kcurve_type, kEndReflection, kDensity, kPick_Pos, kComputeVisco
  ;xout adelay[kpos]
  xout aSound
 
