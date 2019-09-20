@@ -87,13 +87,13 @@ Csound code:
    aFeedb, aSound halfphysler aVelocity, kLength, kRad, kSlope, kEndReflection, kDensity, kPos
 ```
 
-- aVelocity      = input signal to drive the tube model
+- aVelocity      = input air velocity (signal) to drive the tube model
 - kLength        = length of resonator in meters
 - kRad           = radius of beginning section in meters
 - kEndReflection = multiplier for end reflection
 coefficient
 - kDensity       = multiplier for air density
-- k_Pos          = pickup position along the tube (0-1) relative to length (this only affects the aSound output, not the aFeedb!)
+- kPos          = pickup position along the tube (0-1) relative to length (this only affects the aSound output, not the aFeedb!)
 
 ## halfphysler_bela
 

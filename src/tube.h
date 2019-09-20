@@ -26,20 +26,54 @@
 #ifndef SRC_TUBE_H_
 #define SRC_TUBE_H_
 
+
 void grid_init(MYFLT Len, MYFLT dt, MYFLT *dx, int *M, MYFLT *L,
                MYFLT c = 3.4386e+02);
 
-void update_vp_pointers(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
-                        const MYFLT& rho_user, const MYFLT *S,
-                        const MYFLT *pold, const MYFLT *vold,
+//void grid_init_visco(MYFLT Len, MYFLT dt, int Mmax, MYFLT *dx, int *M, MYFLT *L, MYFLT c = 3.4386e+02);
+void alloc_visco_memory(csnd::Csound* csound);
+
+void init_loss_state_array(int M);
+
+void update_vp(int M, const MYFLT& dt, const MYFLT& dx, const MYFLT& c,
+                        const MYFLT& rho_user, const MYFLT* S,
+                        const MYFLT* pold, const MYFLT* vold,
                         MYFLT *pnew, MYFLT *vnew);
+
+void update_visco(int M, MYFLT dx, \
+			 MYFLT dt, MYFLT rho_user, \
+			 MYFLT* S, MYFLT* vold, MYFLT* pold, \
+			 MYFLT* vnew, MYFLT* pnew);
+
+void update_losses(int M, MYFLT* vold, MYFLT* pold, MYFLT* vnew, MYFLT* pnew);
 
 MYFLT cross_area(MYFLT radius, MYFLT x, MYFLT prelength, MYFLT slope);
 
-void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
-                   csnd::AuxMem<MYFLT> knew, csnd::AuxMem<MYFLT> kold);
+MYFLT cross_area_concatenation(csnd::AuxMem<MYFLT> cone_lengths, csnd::AuxMem<MYFLT> radii_in, csnd::AuxMem<MYFLT> radii_out, csnd::AuxMem<MYFLT> curve_type, MYFLT x, int size);
 
-void interpolation_pointers(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold,
+MYFLT linear_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+MYFLT parabolic_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+MYFLT exponential_approx(MYFLT radius_in, MYFLT radius_out, MYFLT x, MYFLT prelength, MYFLT length);
+
+void interp_loss(MYFLT rad, MYFLT coeff[4][100], MYFLT* r); // TODO: change to pointer
+
+void interpolation(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold,
                             MYFLT *knew, MYFLT *kold);
+
+void interpolation_visco(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold, \
+            MYFLT* klossnew, MYFLT*  klossold);
+
+void interpolation_visco_arrays(int M, int Mold, MYFLT Lold, MYFLT dx, MYFLT dxold);
+
+MYFLT R0Z(MYFLT r, MYFLT rho_user, MYFLT eta);
+
+void compute_loss_arrays(int M, MYFLT* S, MYFLT RsZ[4][100], \
+			 MYFLT LsZ[4][100], MYFLT GsY[4][100], MYFLT CsY[4][100],
+             MYFLT dt, MYFLT rho_user, MYFLT c, \
+       MYFLT Zmult = 1, MYFLT Ymult = 1);
+
+
 
 #endif  // SRC_TUBE_H_
