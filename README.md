@@ -2,9 +2,9 @@
 
 The _Half-Physler_ as presented in NIME 2019 + the _resontube_ opcode as presented at ICSC 2019
 
-The opcodes in this repository are a physical model of a tube resonator with one closed and one open end, similar to the resonator of a clarinet or a saxophone. An overview of all user parameters of the opcode including a description of the underlying physical parameters are given at the very bottom.
+The opcodes in this repository are a physical model of a tube resonator with one closed and one open end, similar to the resonator of a clarinet or a saxophone [1]. An overview of all user parameters of the opcode including a description of the underlying physical parameters are given in the Table at the very bottom of this document.
 
-These opcodes are required to build a virtual single-reed instrument called the _Half-Physler_. In this design the excitation mechanism of the instrument is based on actual instrument parts (mouthpiece, clarinet reed, ligature) but the tube is simulated on the [Bela](http://www.bela.io) board. More information can be found in [1].
+These opcodes are required to build a virtual single-reed instrument called the _Half-Physler_. In this design the excitation mechanism of the instrument is based on actual instrument parts (mouthpiece, clarinet reed, ligature) but the tube is simulated on the [Bela](http://www.bela.io) board. More information can be found in [3].
 
 In this repository you find the C++ code to compile the tube models as opcodes for [Csound](https://csound.com). The opcodes are implemented following the guidelines of the _Csound Plugin Opcode Framework_ by Lazzarini (2017)[2].
 
